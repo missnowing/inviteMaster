@@ -1,0 +1,4 @@
+  <view wx:if="{{mask}}" class="mask" style="{{maskStyle}}" />
+  <view class="popup" bind:tap="onPopClose">
+      <slot></slot>
+  </view>

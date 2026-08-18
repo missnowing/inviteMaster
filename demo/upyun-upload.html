@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>又拍云上传 Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #4a90d9;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row>* {
+            flex: 1;
+        }
+
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity .2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: #4a90d9;
+            color: #fff;
+        }
+
+        .btn-primary:disabled {
+            background: #a0c4e8;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: #4a90d9;
+            border: 1px solid #4a90d9;
+            margin-right: 8px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .step-num {
+            width: 26px;
+            height: 26px;
+            background: #4a90d9;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step-body {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .step-detail {
+            color: #888;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            display: block;
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status.info {
+            display: block;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .preview-img {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .result-url {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            color: #4a90d9;
+            margin-top: 4px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>又拍云上传 Demo</h1>
+
+        <!-- 配置参数 -->
+        <div class="section">
+            <label>又拍云配置</label>
+            <div class="row">
+                <div>
+                    <label style="font-size:12px">Bucket</label>
+                    <input type="text" id="bucket" value="iwallet">
+                </div>
+                <div>
+                    <label style="font-size:12px">Operator</label>
+                    <input type="text" id="operator" value="cvcphp">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <label>签名服务地址</label>
+            <input type="text" id="signServer" value="https://apisesame.com">
+        </div>
+
+        <div class="section">
+            <label>CORS 代理 <span style="color:#999;font-weight:400">(浏览器跨域时使用，留空则直连)</span></label>
+            <input type="text" id="corsProxy" placeholder="例如: http://localhost:8080/">
+        </div>
+
+        <div class="section">
+            <label>存储路径参数</label>
+            <div class="row">
+                <div>
+                    <label style="font-size:12px">分类 (typename)</label>
+                    <input type="text" id="typename" value="user">
+                </div>
+                <div>
+                    <label style="font-size:12px">目录 (dir)</label>
+                    <input type="text" id="dir" placeholder="自动生成">
+                </div>
+            </div>
+            <div class="row" style="margin-top:8px">
+                <div>
+                    <label style="font-size:12px">OpenID</label>
+                    <input type="text" id="openid" value="demo_user">
+                </div>
+                <div>
+                    <label style="font-size:12px">文件后缀</label>
+                    <input type="text" id="suffix" value="png">
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- 上传步骤 -->
+        <h2 style="font-size:16px; margin-bottom:12px; color:#333">上传流程</h2>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+                <div class="step-title">选择文件</div>
+                <input type="file" id="fileInput" accept="image/*">
+                <img id="preview" class="preview-img">
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+                <div class="step-title">生成 Policy 并获取签名</div>
+                <div class="step-detail" id="policyDetail">等待生成...</div>
+                <div id="statusSign" class="status"></div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+                <div class="step-title">上传文件到又拍云</div>
+                <div class="step-detail" id="uploadDetail">等待上传...</div>
+                <progress id="progressBar" value="0" max="100"
+                    style="width:100%; margin-top:8px; display:none;"></progress>
+                <div id="statusUpload" class="status"></div>
+                <div id="resultUrl" class="result-url"></div>
+            </div>
+        </div>
+
+        <button id="btnUpload" class="btn-primary" style="width:100%; margin-top:12px;">开始上传</button>
+    </div>
+
+    <script>
+        // ========== Base64 编码 (与小程序端一致) ==========
+        const Base64 = {
+            _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+
+            encode: function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) { enc3 = enc4 = 64; }
+                    else if (isNaN(chr3)) { enc4 = 64; }
+                    output = output +
+                        this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+                        this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+                }
+                return output;
+            },
+
+            _utf8_encode: function (string) {
+                string = string.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < string.length; n++) {
+                    var c = string.charCodeAt(n);
+                    if (c < 128) { utftext += String.fromCharCode(c); }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    } else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                }
+                return utftext;
+            }
+        };
+
+        // ========== 又拍云上传核心逻辑 ==========
+        const BUCKET = document.getElementById('bucket').value;
+        const OPERATOR = document.getElementById('operator').value;
+        const SIGN_SERVER = document.getElementById('signServer').value;
+
+        // 文件预览
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (ev) {
+                    var img = document.getElementById('preview');
+                    img.src = ev.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                // 自动推断后缀
+                var ext = file.name.split('.').pop().toLowerCase();
+                document.getElementById('suffix').value = ext || 'png';
+            }
+        });
+
+        // 自动填充目录日期
+        (function () {
+            var now = new Date();
+            var yyyy = now.getFullYear();
+            var mm = String(now.getMonth() + 1).padStart(2, '0');
+            var dd = String(now.getDate()).padStart(2, '0');
+            document.getElementById('dir').value = yyyy + '-' + mm + '-' + dd;
+        })();
+
+        /**
+         * 获取又拍云上传签名
+         * 对应小程序 getSignature()
+         */
+        function getSignature(typename, suffix, dir, openid) {
+            var name = Date.now() + Math.random().toString(16).slice(2);
+            var path = ["witinvite", typename, openid, dir, name].join("/") + "." + suffix;
+            var date = new Date().toUTCString();
+
+            var opts = {
+                'save-key': path,
+                bucket: BUCKET,
+                expiration: Math.round(Date.now() / 1000) + 3600,
+                date: date
+            };
+
+            var policy = Base64.encode(JSON.stringify(opts));
+            var signStr = ['POST', '/' + BUCKET, date, policy].join('&');
+
+            var corsProxy = document.getElementById('corsProxy').value.trim();
+            var url = (corsProxy || SIGN_SERVER) + '/iwallet/base/getSignature';
+            // 若有 CORS 代理，将目标地址作为参数传给代理
+            if (corsProxy) {
+                url = corsProxy + '?url=' + encodeURIComponent(SIGN_SERVER + '/iwallet/base/getSignature');
+            }
+
+            document.getElementById('policyDetail').innerHTML =
+                'save-key: <code>' + path + '</code><br>' +
+                'policy (Base64): <code style="word-break:break-all">' + policy + '</code>';
+
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'data=' + encodeURIComponent(signStr)
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (r) {
+                    if (r.result >= 0) {
+                        console.log('getSignature 成功', r);
+                        return { message: r.message, policy: policy };
+                    }
+                    throw new Error(r.message || '签名获取失败');
+                });
+        }
+
+        /**
+         * 上传文件到又拍云
+         * 对应小程序 uploadImage() 中的 wx.uploadFile 部分
+         */
+        function uploadToUpyun(file, policy, signature) {
+            var formData = new FormData();
+            formData.append('policy', policy);
+            formData.append('authorization', 'UPYUN ' + OPERATOR + ':' + signature);
+            formData.append('x-gmkerl-type', 'get_theme_color');
+            formData.append('file', file);
+
+            var xhr = new XMLHttpRequest();
+
+            // 上传进度
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                    var percent = Math.round((e.loaded / e.total) * 100);
+                    var progressBar = document.getElementById('progressBar');
+                    progressBar.style.display = 'block';
+                    progressBar.value = percent;
+                    document.getElementById('uploadDetail').textContent =
+                        '上传进度: ' + percent + '% (' +
+                        formatSize(e.loaded) + ' / ' + formatSize(e.total) + ')';
+                }
+            });
+
+            return new Promise(function (resolve, reject) {
+                xhr.open('POST', 'https://v0.api.upyun.com/' + BUCKET);
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            resolve(JSON.parse(xhr.responseText));
+                        } catch (e) {
+                            resolve({ raw: xhr.responseText });
+                        }
+                    } else {
+                        reject(new Error('HTTP ' + xhr.status + ': ' + xhr.statusText));
+                    }
+                };
+                xhr.onerror = function () { reject(new Error('网络错误')); };
+                xhr.ontimeout = function () { reject(new Error('上传超时')); };
+                xhr.timeout = 60000;
+                xhr.send(formData);
+            });
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        /**
+         * 使用 Canvas 压缩图片，确保输出文件大小在 targetSizeMB 以内
+         * @param {File} file - 原始图片文件
+         * @param {number} targetSizeMB - 目标大小 (MB)，默认 1
+         * @returns {Promise<{file: File, originalSize: number, compressedSize: number}>}
+         */
+        function compressImage(file, targetSizeMB) {
+            targetSizeMB = targetSizeMB || 1;
+            var maxBytes = targetSizeMB * 1024 * 1024;
+
+            // 如果文件已经小于目标大小，直接返回
+            if (file.size <= maxBytes) {
+                return Promise.resolve({
+                    file: file,
+                    originalSize: file.size,
+                    compressedSize: file.size,
+                    noCompress: true
+                });
+            }
+
+            return new Promise(function (resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = new Image();
+                    img.onload = function () {
+                        // 限制最大尺寸，避免超大分辨率
+                        var maxWidth = 1920;
+                        var maxHeight = 1920;
+                        var width = img.width;
+                        var height = img.height;
+
+                        if (width > maxWidth || height > maxHeight) {
+                            var ratio = Math.min(maxWidth / width, maxHeight / height);
+                            width = Math.round(width * ratio);
+                            height = Math.round(height * ratio);
+                        }
+
+                        var canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // 从高质量开始，逐步降低直到满足大小要求
+                        var quality = 0.8;
+                        var minQuality = 0.15;
+                        var outputType = 'image/jpeg';
+
+                        function tryCompress(q) {
+                            canvas.toBlob(function (blob) {
+                                if (blob) {
+                                    if (blob.size <= maxBytes || q <= minQuality) {
+                                        var compressedFile = new File([blob], file.name, {
+                                            type: outputType,
+                                            lastModified: Date.now()
+                                        });
+                                        resolve({
+                                            file: compressedFile,
+                                            originalSize: file.size,
+                                            compressedSize: blob.size,
+                                            quality: q,
+                                            noCompress: false
+                                        });
+                                    } else {
+                                        // 根据超出比例动态调整步长
+                                        var ratio = maxBytes / blob.size;
+                                        var nextQ = Math.max(minQuality, q * Math.sqrt(ratio) - 0.02);
+                                        tryCompress(nextQ);
+                                    }
+                                } else {
+                                    reject(new Error('Canvas toBlob 失败'));
+                                }
+                            }, outputType, q);
+                        }
+
+                        tryCompress(quality);
+                    };
+                    img.onerror = function () { reject(new Error('图片加载失败')); };
+                    img.src = e.target.result;
+                };
+                reader.onerror = function () { reject(new Error('文件读取失败')); };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ========== 主流程 ==========
+        document.getElementById('btnUpload').addEventListener('click', function () {
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            if (!file) { alert('请先选择文件'); return; }
+
+            var typename = document.getElementById('typename').value || 'user';
+            var suffix = document.getElementById('suffix').value || 'png';
+            var dir = document.getElementById('dir').value;
+            var openid = document.getElementById('openid').value || 'demo_user';
+
+            // 重置状态
+            ['statusSign', 'statusUpload'].forEach(function (id) {
+                var el = document.getElementById(id);
+                el.className = 'status';
+                el.textContent = '';
+            });
+            document.getElementById('resultUrl').textContent = '';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressBar').value = 0;
+            document.getElementById('uploadDetail').textContent = '等待上传...';
+
+            var btn = document.getElementById('btnUpload');
+            btn.disabled = true;
+            btn.textContent = '上传中...';
+
+            // Step 1: 获取签名
+            var signStatus = document.getElementById('statusSign');
+            signStatus.className = 'status info';
+            signStatus.textContent = '正在获取签名...';
+
+            getSignature(typename, suffix, dir, openid)
+                .then(function (result) {
+                    signStatus.className = 'status success';
+                    signStatus.textContent = '签名获取成功';
+
+                    // Step 2: 压缩图片（通过 Canvas 降低质量至 1MB 以内）
+                    var uploadStatus = document.getElementById('statusUpload');
+                    uploadStatus.className = 'status info';
+                    uploadStatus.textContent = '正在压缩图片...';
+                    document.getElementById('uploadDetail').textContent =
+                        '原始大小: ' + formatSize(file.size) + '，目标: ≤1MB';
+
+                    return compressImage(file, 1).then(function (compressResult) {
+                        return { result: result, compress: compressResult };
+                    });
+                })
+                .then(function (data) {
+                    var compressResult = data.compress;
+                    var uploadStatus = document.getElementById('statusUpload');
+
+                    if (compressResult.noCompress) {
+                        uploadStatus.textContent = '文件已在 1MB 以内，无需压缩，正在上传...';
+                    } else {
+                        var pct = ((1 - compressResult.compressedSize / compressResult.originalSize) * 100).toFixed(0);
+                        uploadStatus.textContent = '压缩完成: ' +
+                            formatSize(compressResult.originalSize) + ' → ' +
+                            formatSize(compressResult.compressedSize) +
+                            ' (减小 ' + pct + '%)，正在上传...';
+                    }
+
+                    // 更新上传详情
+                    document.getElementById('uploadDetail').textContent =
+                        '原始: ' + formatSize(compressResult.originalSize) +
+                        ' → 压缩后: ' + formatSize(compressResult.compressedSize) +
+                        (compressResult.quality !== undefined ? ' (quality: ' + compressResult.quality.toFixed(2) + ')' : '');
+
+                    // Step 3: 上传压缩后的文件
+                    return uploadToUpyun(compressResult.file, data.result.policy, data.result.message);
+                })
+                .then(function (res) {
+                    document.getElementById('statusUpload').className = 'status success';
+                    document.getElementById('statusUpload').textContent = '上传成功!';
+                    document.getElementById('uploadDetail').textContent = JSON.stringify(res, null, 2);
+                    document.getElementById('resultUrl').textContent =
+                        '又拍云返回: ' + JSON.stringify(res);
+                })
+                .catch(function (err) {
+                    var target = document.getElementById('statusUpload');
+                    if (target.className.indexOf('info') === -1) {
+                        // 签名阶段就失败了
+                        document.getElementById('statusSign').className = 'status error';
+                        document.getElementById('statusSign').textContent = '签名失败: ' + err.message;
+                    } else {
+                        target.className = 'status error';
+                        target.textContent = '上传失败: ' + err.message;
+                    }
+                    console.error(err);
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                    btn.textContent = '开始上传';
+                });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+<view wx:if="{{loading}}" class="loading" 
+    style="width:{{width}};height:{{height}};">
+    <view class="circle">
+        <view class="inner" style="background-color:{{backgroundColor}}" />
+    </view>
+</view>

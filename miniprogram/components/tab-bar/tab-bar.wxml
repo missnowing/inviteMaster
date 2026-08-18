@@ -1,0 +1,7 @@
+<view class="tab-bar">
+    <view wx:for="{{menu}}" wx:key="{{url}}" catch:tap="onSwitchTab" 
+    data-url="{{item.url}}" style="color:{{selected === index?'var(--color-icon)':''}}">
+        <!--<view class="{{selected=== index?item.active:item.icon}}"></view>-->
+        <text class="{{selected === index?'active':''}}">{{item.nav}}</text>
+    </view>
+</view>

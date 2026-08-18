@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "privacy-popup": "/components/privacyPopup/privacyPopup",
+    "navigation-bar": "/components/navigation-bar",
+    "tab-bar": "/components/tab-bar/tab-bar",
+    "half-layout": "/components/half-layout/half-layout"
+  },
+  "disableScroll": true,
+  "navigationStyle": "custom",
+  "componentFramework": "glass-easel"
+}

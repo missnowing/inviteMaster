@@ -1,0 +1,6 @@
+{
+    "usingComponents": {
+        "popup": "/components/popup1/popup1",
+        "loading": "/components/ui/loading/loading"
+    }
+}

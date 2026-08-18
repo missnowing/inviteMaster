@@ -1,0 +1,259 @@
+import { _request } from "../utils/util";
+import Base64 from '../utils/lib/base64';
+import { TUser, TUserInfo, setUser, setUserInfo } from "./userSlice";
+
+export const _Server = "https://witknow.com";
+export const _CDN = "https://cdniwallet.apisesame.com/";
+
+export const Upyun = {
+  bucket: 'iwallet',
+  operator: 'cvcphp'
+};
+
+export type IInterface = {
+  code: string,
+  message: string,
+  result: number,
+  perlogo?: string,
+}
+export type TFont = {
+  date: string,
+  fontKey: string,
+  id: number,
+  name: string,
+  url: string,
+}
+export const GlobalSlice = {
+  name: 'global',
+  initialState: {
+    showTabBar: !0,
+    perlogo: "",
+    fonts: [],
+  },
+  reducers: {
+    setTabbar: (payload: boolean) => {
+      const app = getApp();
+      app.proxyData.showTabBar = payload;
+    },
+    setPerlogo: (payload: string) => {
+      const app = getApp();
+      app.globalData.perlogo = payload;
+    },
+    setFonts: (payload: TFont[]) => {
+      const app = getApp();
+      app.globalData.fonts = payload;
+    },
+  },
+}
+export const {
+  setTabbar, setPerlogo, setFonts
+} = GlobalSlice.reducers;
+
+export const wxLogin = (success?: Function) => {
+  wx.login({
+    success: res => {
+      _request({
+        url: "/witinvite/user/login",
+        params: { code: res.code, },
+        mask: !0,
+        formData: !0,
+      }).then((r: any) => {
+        console.log("user get!", r);
+        const { token, openid, perlogo }: TUser & { perlogo: string } = { ...r };
+        const userinfo: TUserInfo = r.user;
+        setUser({ token, openid });
+        setPerlogo(perlogo);
+        setUserInfo(userinfo);
+        wx.setStorage({
+          key: "user",
+          data: { token, openid, userinfo, perlogo },
+        });
+        success && success(r);
+      });
+    }, fail(e) {
+      wx.showModal({
+        title: `网络异常，请重试`,
+        content: e.errMsg,
+        confirmText: "重试",
+        // showCancel: !1,
+        success(res) {
+          if (res.confirm) {
+            console.log('用户点击确定');
+            wxLogin(success);
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        }
+      })
+      // wx.showToast({ title: `登录失败`, duration: 3000, icon: "error" });
+    }
+  })
+}
+
+/**
+ * 获取 又拍云 的验证
+ * @param typename 
+ * @param suffix 
+ * @param name 
+ * @param date 
+ * @returns 
+ * 信息保存：
+    个人信息要目录
+    iwallet/user
+
+    个人图像、单位图像：
+    iwallet/user/[openid]/logo
+
+    个人名片，名片绘制的内容
+    iwallet/user/[openid]/card
+
+    个人名片壁纸
+    iwallet/user/[openid]/bgimg
+    
+    个人名片二维码
+    iwallet/user/[openid]/qr
+
+    个人上的名片模版图
+    iwallet/user/openid/cardimg
+ */
+export const getSignature = (
+  typename = "user",
+  suffix = "png",
+  dir = (new Date() as any).Format('yyyy-MM-dd'),
+  name = new Date().getTime() + Math.random().toString(16).slice(2),
+  date = new Date().toUTCString(),
+) => {
+  const path = ["witinvite", typename, getApp().globalData.user.openid, dir, name].join("/") + "." + suffix;
+  let opts = {
+    'save-key': path,
+    bucket: Upyun.bucket,
+    expiration: Math.round(new Date().getTime() / 1000) + 3600,
+    date: date
+  }
+  let policy = Base64.encode(JSON.stringify(opts));
+  let data = ['POST', '/' + Upyun.bucket, date, policy].join('&');
+  return _request({ server: "https://apisesame.com", url: `/iwallet/base/getSignature`, params: { data, }, loading: !1 })
+    .then((r: any) => {
+      if (r.result >= 0) {
+        console.log("getSignature", r);
+        return Promise.resolve({ ...r, policy });
+      } else if (r.status === 98) {
+        return Promise.reject(r.message)
+      } else return Promise.reject(r.message)
+    });
+};
+
+/**
+ * 上传图片到 又拍云
+ * @param param0 
+ * @returns 
+ */
+export const uploadImage = ({
+  tempPath,
+  typename,
+  suffix,
+  dir,
+  onProgress
+}: {
+  tempPath: string,
+  typename?: string,
+  suffix?: string,
+  dir?: string,
+  onProgress?: Function
+}) => {
+  return getSignature(typename, suffix, dir).then(({ message, policy }: any) => {
+    return new Promise((resolve, reject) => {
+      const task = wx.uploadFile({
+        url: `https://v0.api.upyun.com/${Upyun.bucket}`,
+        filePath: tempPath,
+        name: 'file',
+        formData: {
+          policy,
+          authorization: `UPYUN ${Upyun.operator}:${message}`,
+          "x-gmkerl-type": "get_theme_color"
+        },
+        success(res) {
+          resolve(JSON.parse(res.data));
+        },
+        fail(err) {
+          reject(err.errMsg);
+        },
+      });
+      task.onProgressUpdate((res) => {
+        onProgress?.(res);
+        console.log('上传进度', res.progress)
+        console.log('已经上传的数据长度', res.totalBytesSent)
+        console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+      })
+    })
+  })
+}
+
+// /**
+//  * 上传图片到 又拍云
+//  * @param param0 
+//  * @returns 
+//  */
+// export const uploadImage = ({
+//   tempPath,
+//   fileName,
+//   onProgress
+// }: {
+//   tempPath: string,
+//   fileName: string,
+//   onProgress?: Function
+// }) => {
+//   return new Promise((resolve, reject) => {
+//     const task = wx.uploadFile({
+//       url: _Server + `/witinvite/user/upFileYun`,
+//       filePath: tempPath,
+//       name: 'file',
+//       formData: {
+//         fileName
+//       },
+//       header: {
+//         token: getApp().globalData.user.token,
+//         openid: getApp().globalData.user.openid,
+//       },
+//       success(res) {
+//         // console.log(res);
+//         resolve(JSON.parse(res.data));
+//       },
+//       fail(err) {
+//         console.log(err);
+//         reject(err?.errMsg);
+//       },
+//     });
+//     task.onProgressUpdate((res) => {
+//       onProgress?.(res);
+//       console.log('上传进度', res.progress)
+//       // console.log('已经上传的数据长度', res.totalBytesSent)
+//       // console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+//     })
+//   })
+// }
+
+/***
+ * 获取名片模板
+ */
+export const selectFonts = () => {
+  return _request({
+    url: `/witinvite/fonts/get`, params: {
+    }, header: {
+      token: getApp().globalData.user.token,
+      openid: getApp().globalData.user.openid,
+    }
+  }).then((r: any) => {
+    console.log(r);
+    if (r.result >= 0) {
+      setFonts(r.message);
+      return Promise.resolve({ list: r.message, perlogo: r.perlogo });
+    } else {
+      return Promise.reject(r);
+    }
+  }).catch(e => {
+    return Promise.reject();
+  })
+}
+
+export default GlobalSlice.reducers;

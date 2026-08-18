@@ -1,0 +1,34 @@
+<popup id="the-dialog" mask="{{!1}}" popClose="{{!1}}" bind:close="onTriggerClose" bind:attached="onTriggerattached">
+    <view class="single-edit" catch:tap="prevent">
+        <view wx:if="{{popImage.show}}" class="section_image">
+            <view bind:tap="tapUpload">
+                <block wx:if="{{popImage.src}}">
+                    <image src="{{perlogo + popImage.src}}"></image>
+                </block>
+                <block wx:else>
+                    <view>
+                        <text class="iwallet1 iwallet1-xiangji" />
+                    </view>
+                </block>
+            </view>
+            <text>{{popImage.title}}</text>
+        </view>
+        <view class="header">
+            <text>{{title}}</text>
+        </view> 
+        <view class="section">
+            <textarea class="textarea" value="{{popText}}" placeholder="{{placeholder}}"
+                maxlength="140" focus="{{popFocus}}" 
+                placeholder-class="textarea1" 
+                placeholder-style="{{color:'#999999'}}"
+                confirm-type="done"
+                bindinput="onInput">
+            </textarea>
+        </view>
+        <view class="footer">   
+            <view catch:tap="tapCancel">{{cancel}}</view>
+            <loading loading="{{loading}}" />
+            <view catch:tap="tapConfirm">{{confirm}}</view>
+        </view>
+    </view>
+</popup>

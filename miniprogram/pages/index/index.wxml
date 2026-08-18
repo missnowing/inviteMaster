@@ -1,0 +1,55 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <tab-bar selected="{{0}}"/>
+  <privacy-popup bind:agree="agree" bind:disagree="disagree"></privacy-popup>
+  <navigation-bar bind:bindMenu="bindMenu">
+    <view slot="center" class="center" bind:tap="tapSearch">
+      <text class="iwallet1 iwallet1-search navIcon" />
+      <input type="text" placeholder="请输入关键字" class="navInput " 
+        maxlength="20" placeholder-style=""
+        catch:focus="tapSearch" bind:blur="" bindconfirm=""
+        confirm-type="search" disabled />
+      <text class="navbtn">搜索</text>
+        <!--<text class="iwallet1 iwallet1-deepseek navAI" catch:tap="tapSearchAI" />-->
+    </view>
+  </navigation-bar>
+  <view class="contain">
+    <scroll-view class="header" scroll-x show-scrollbar="{{false}}" type="list"
+      scroll-behavior="smooth" scroll-with-animation="true"
+      scroll-into-view="{{into}}" scroll-into-view-alignment="center">
+      <text id="{{'A'+item.id}}" wx:for="{{types}}" wx:key="id" bind:tap="tapMenu" 
+      data-item="{{item}}" data-index="{{index}}"
+      class="{{selectIndex===index?'active':''}}">{{item.name}}</text>
+    </scroll-view>
+    <view class="swiper">
+      <swiper current="{{selectIndex}}" bind:change="tabChanged" 
+        worklet:onscrollstart="onTabTransition" 
+        worklet:onscrollupdate="onTabTransition" 
+        worklet:onscrollend="onTabTransitionEnd" 
+        duration="{{400}}" cache-extent="1">
+        <swiper-item class="swiperItem" wx:for="{{types}}" wx:key="id" wx:for-item="type">
+          <scroll-view class="scroll" scroll-y scrollbar="false" type="list"> 
+            <view class="swiperList">
+              <share-element wx:for="{{templates[selectCategory].list}}" class="template" transition-on-gesture
+                  wx:for-item="template" key="se-{{template.id}}" transform 
+                  data-se="se-{{template.id}}" data-bg="{{template.thumbnail}}" data-item="{{template}}" 
+                  bind:tap="tapSelect">
+                <image src="{{template.thumbnail}}" mode="aspectFit" 
+                  lazy-load="{{false}}"  />
+              </share-element>
+            <!--
+              <view wx:for="{{wallpapers.list[type.id].list}}" class="wallPaper" wx:for-item="paper">
+                  <image src="{{wallpapers.perlogo + (paper.img||paper.bg) + '!/format/webp/fw/750'}}" mode="aspectFill" 
+                  lazy-load="{{false}}" bind:tap="tapSelect" data-item="{{paper}}" />
+              </view>
+              <view class="listMore observe{{type.id}}">
+                <text wx:if="{{wallpapers.list[type.id].total && wallpapers.list[type.id].total <= wallpapers.list[type.id].page*pageSize}}">没有更多</text>
+                <text wx:else bind:tap="tapMore">加载更多</text>
+              </view>
+              -->
+            </view>
+          </scroll-view>
+        </swiper-item>
+      </swiper>
+    </view>
+  </view> 
+</page-meta>

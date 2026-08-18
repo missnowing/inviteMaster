@@ -1,0 +1,11 @@
+{
+    "usingComponents": {
+      "navigation-bar": "/components/navigation-bar",
+      "tab-bar": "/components/tab-bar/tab-bar",
+      "half-layout": "/components/half-layout/half-layout",
+      "material": "/components/material/material"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "componentFramework": "glass-easel"
+  }

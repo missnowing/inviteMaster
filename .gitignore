@@ -1,0 +1,19 @@
+# 微信小程序
+.DS_Store
+node_modules/
+miniprogram_npm/
+*.log
+*.map
+dist/
+
+# 项目私有配置（不提交）
+project.private.config.json
+
+# 工具
+.idea/
+.vscode/
+.claude/
+
+# 系统文件
+Thumbs.db
+desktop.ini

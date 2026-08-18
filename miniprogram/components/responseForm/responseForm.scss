@@ -1,0 +1,97 @@
+@import '../../global.scss';
+@import '../../assets//iconfont/iconfont.scss';
+
+.responseForm {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+
+    .dataForm {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+
+        .field {
+            padding: .75rem 0;
+            border-bottom: 1px solid var(--color-sline);
+
+            &.row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .label {
+                display: block;
+                font-size: var(--size-n);
+                color: var(--color-abf3);
+                margin-bottom: .5rem;
+
+                .row & {
+                    margin-bottom: 0;
+                }
+            }
+        }
+
+        .responseTypes {
+            display: flex;
+            gap: .75rem;
+
+            .typeChip {
+                flex: 1;
+                text-align: center;
+                padding: .5rem;
+                border-radius: .5rem;
+                font-size: var(--size-n);
+                color: var(--color-abf3);
+                background: var(--color-item-bg);
+                transition: all .2s;
+
+                &.active {
+                    color: var(--color-item-font-ck);
+                    background: var(--color-item-bg-ck);
+                }
+            }
+        }
+
+        .input {
+            width: 100%;
+            height: 2.25rem;
+            padding: 0 .5rem;
+            border-radius: .5rem;
+            font-size: var(--size-n);
+            color: var(--color-abf1);
+            background: var(--color-item-bg);
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 5rem;
+            padding: .5rem;
+            border-radius: .5rem;
+            font-size: var(--size-n);
+            color: var(--color-abf1);
+            background: var(--color-item-bg);
+        }
+
+        .counter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .op {
+                font-size: var(--size-l);
+                color: var(--color-abf2);
+                padding: .25rem;
+            }
+
+            .num {
+                font-size: var(--size-m);
+                color: var(--color-abf1);
+                min-width: 1.5rem;
+                text-align: center;
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {
+    "popup": "/components/popup1/popup1",
+    "audioCut": "./audioCut/audioCut"
+  },
+  "disableScroll": true,
+  "navigationStyle": "custom"
+}

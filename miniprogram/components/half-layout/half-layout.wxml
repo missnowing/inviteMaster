@@ -1,0 +1,31 @@
+<view class="bg" bind:tap="tapBG"></view>
+<view class="contain" style="height:{{height}};">
+  <!-- 为了应对opacity中背景图filter：blur后边上泛白的问题(通过opacity放大，然后bgImg隐藏overflow即可) -->
+  <view class="bgImg">  
+    <!--<view class="opacity" style="{{style}};"></view>-->
+    <!--<image class="image" fade-in="{{fade}}" src="{{image}}" bind:load="loadImage" />-->
+    <image class="image" fade-in="{{fade}}" mode="aspectFill" 
+      src="{{image}}" bind:error="onError" />
+  </view>
+  <view class="container" style="height:{{height}};background:{{background}};">
+    <!-- 顶部不参与手势协商，单独控制 -->
+    <pan-gesture-handler worklet:ongesture="handlePan" style="flex-shrink: 0;">
+      <view class="header">
+        <text wx:if="{{back}}" class="close iwallet1 iwallet1-chahao-01" capture-catch:tap="onTapCloseComment"></text>
+        <slot name="header"></slot>
+      </view>
+    </pan-gesture-handler>
+    <!-- 滚动区要与 pan 手势协商 -->
+    <pan-gesture-handler id="pan" wx:if="{{!hideScroll}}" worklet:should-response-on-move="shouldPanResponse" simultaneous-handlers="{{['scroll']}}" worklet:ongesture="handlePan">
+      <vertical-drag-gesture-handler id="scroll" native-view="scroll-view" worklet:should-response-on-move="shouldScrollViewResponse" simultaneous-handlers="{{['pan']}}">
+        <scroll-view scroll-y class="scrollView" worklet:adjust-deceleration-velocity="adjustDecelerationVelocity" worklet:onscrollupdate="handleScroll" type="list" show-scrollbar="{{false}}">
+          <slot name="content"></slot>
+        </scroll-view>
+      </vertical-drag-gesture-handler>
+    </pan-gesture-handler>
+    <view class="footer">
+      <slot name="footer"></slot>
+      <!-- <view class="safe-area-inset-bottom"></view> -->
+    </view>
+  </view>
+</view>

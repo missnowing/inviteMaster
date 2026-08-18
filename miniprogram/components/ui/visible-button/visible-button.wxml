@@ -1,0 +1,11 @@
+<view class="contain" bind:tap="tapSubmit">
+    <block wx:if="{{custom}}">
+        <slot name="title" />
+    </block>
+    <view wx:else class="title">
+        <text>{{title}}</text>
+    </view>
+    <view class="progress">
+        <view style="width:{{progress}}%;{{transition?'transition: width 200ms linear':''}}"/>
+    </view>
+</view>

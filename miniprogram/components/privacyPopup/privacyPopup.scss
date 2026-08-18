@@ -1,0 +1,62 @@
+.dialog {
+    display: flex;
+    // margin: 2rem;
+    width: 80%;
+    border-radius: 1rem;
+    background-color: var(--color-abbg);
+    border: .5px solid var(--color-abbg);
+    min-height: calc(var(--length-height) * 4);
+    // min-height: calc(var(--length-height) * 4);
+    max-height: 80vh;
+    padding: 2rem;
+    flex-direction: column;
+
+    &>.header {
+        display: flex;
+        padding: 1rem;
+
+        &>.title {
+            margin: auto;
+            font-size: var(--size-title);
+            font-weight: bold;
+        }
+    }
+
+    &>.section {
+        flex: 1;
+        min-height: 30%;
+
+        &>.tips {
+            color: var(--color-abf3);
+        }
+    }
+
+    &>.footer {
+        display: flex;
+        flex-direction: column;
+        background-color: inherit;
+
+        &>.contract {
+            margin: 1rem auto;
+            color: var(--color-abf2);
+        }
+
+        &>button.agree {
+            width: 100%;
+            height: calc(var(--length-height) / 1.5);
+            border-radius: calc(var(--length-height) / 1.5);
+            background-color: var(--color-abf2);
+            color: white;
+            font-weight: bolder;
+        }
+
+        &>button.disagree {
+            width: 100%;
+            height: calc(var(--length-height) / 1.5);
+            border-radius: calc(var(--length-height) / 1.5);
+            background-color: inherit;
+            color: var(--color-abf1);
+            font-weight: bolder;
+        }
+    }
+}

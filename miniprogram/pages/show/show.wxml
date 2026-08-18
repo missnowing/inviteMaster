@@ -1,0 +1,43 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <navigation-bar bind:bindMenu="bindMenu" back>
+  </navigation-bar>
+  <view class="contain">
+    <text wx:if="{{invitation.backgroundMusic || template.backgroundMusic}}" class="music iconfont icon-yinle {{play?'play':''}}" 
+        bind:tap="tapPlay"/>
+    <scroll-view scroll-y scrollbar="false" type="list">
+        <share-element key="{{se}}"
+            transition-on-gesture transform="true" shuttle-on-pop="from"
+            class="shareElement" bind:tap="">
+            <image src="{{bg}}" mode="widthFix"  />
+        </share-element>
+    </scroll-view>
+    <view class="footer">
+        <view wx:if="{{template}}">
+            <text bind:tap="tapCreate">制作</text>
+        </view>
+        <view wx:if="{{invitation}}">
+            <text bind:tap="tapReply" class="replay">{{response?'已回复':'回复'}}</text>  
+        </view>
+        <view wx:if="{{invitation}}">
+            <text id="favor" bind:tap="tapFavorite" 
+              style="color:{{favorite?'var(--color-error)':'var(--color-abf2)'}}">{{favorite?'取消收藏':'收藏'}}</text>
+        </view>
+    </view>
+  </view> 
+  <half-layout id="the-response" back="{{!1}}" bind:close="layoutClose" background="var(--color-absbg)">   
+    <view slot="header" class="edit-header">
+        <view class="card-header">
+            <text class="title">回复</text>
+            <text class="iconfont icon-guanbijiantou close" bind:tap="onCancel" />
+        </view>
+    </view>
+    <view slot="content" class="edit-content">
+        <responseForm id="the-Form" bind:trigger="triggerSubmit" 
+            theInvitation="{{invitation}}" theResponse="{{response}}" />
+    </view>
+    <view slot="footer" class="card-footer">
+      <text class="btn cancel" bind:tap="onCancel">取消</text>
+      <text class="btn submit" bind:tap="onSubmit">提交</text>
+    </view>
+  </half-layout>
+</page-meta>

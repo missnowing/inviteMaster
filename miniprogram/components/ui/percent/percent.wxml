@@ -1,0 +1,4 @@
+<view class="percent" style="width:{{width}};height:{{height}}">
+    <view class="circle" style="height:{{percent}}%"></view>
+    <view class="number"></view>
+</view>

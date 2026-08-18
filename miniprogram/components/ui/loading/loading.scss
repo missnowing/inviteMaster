@@ -1,0 +1,32 @@
+.loading {
+    .circle {
+        position: relative;
+        border-radius: 50%;
+        width: 100%;
+        height: 100%;
+        background: conic-gradient(var(--color-abbg), var(--color-abdicon));
+        animation: spin 2s linear infinite;
+
+        .inner {
+            position: absolute;
+            z-index: 999;
+            content: '';
+            border-radius: 50%;
+            left: 5%;
+            top: 5%;
+            width: 90%;
+            height: 90%;
+        }
+
+        /* 无限循环的旋转动画 */
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    }
+}

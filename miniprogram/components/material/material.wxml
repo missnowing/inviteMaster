@@ -1,0 +1,58 @@
+<view class="materialContain">
+  <view class="materialCategorys">
+    <text wx:for="{{materialCategorys}}" class="{{selectSwiper === index ? 'active':''}}"
+      data-index="{{index}}" bind:tap="tapSwiper" >{{item.name}}</text>
+  </view>
+  <swiper current="{{selectSwiper}}" bind:change="tapChanged"
+    worklet:onscrollstart="onTabTransition"
+    worklet:onscrollupdate="onTabTransition"
+    worklet:onscrollend="onTabTransitionEnd"
+    duration="{{400}}" cache-extent="1"
+    style="height:100%;">
+    <swiper-item class="swiperItem" wx:for="{{materialCategorys}}" wx:key="code">
+      <scroll-view scroll-y scrollbar="false" type="list">
+        <view class="scrollContain">
+          <view class="material {{material.category === 'music'?'fourth':''}} add _flex" bind:tap="tapMaterialUpload">
+            <text class="iconfont icon-zengjia" />
+          </view>
+          <view wx:for="{{materials[item.code].list}}" class="material {{material.category === 'music'?'fourth':''}}"
+              wx:for-item="material" key="{{material.id}}"
+              data-item="{{material}}" bind:tap="tapPreviewMaterial">
+            <!-- 图片 -->
+            <image wx:if="{{material.category === 'image'}}" src="{{_CDN + material.url}}" mode="aspectFit"
+              lazy-load="{{false}}" style="width:100%" />
+            <!-- 视频 -->
+            <view wx:elif="{{material.category === 'video'}}" class="preview video">
+              <image wx:if="{{material.coverUrl}}" src="{{_CDN + material.coverUrl}}" mode="aspectFill" />
+              <view class="mask">
+                <text class="iconfont icon-bofang" />
+              </view>
+              <text class="name">{{material.name}}</text>
+            </view>
+            <!-- 音乐 -->
+            <view wx:elif="{{material.category === 'music'}}" class="preview music">
+              <text class="iconfont icon-yinle {{play ? 'play':''}}" />
+              <text class="name">{{material.name}}</text>
+            </view>
+            <!-- 字体 -->
+            <view wx:elif="{{material.category === 'font'}}" class="preview font">
+              <text class="type">Aa</text>
+              <text class="name">{{material.name}}</text>
+            </view>
+            <!-- 其他 -->
+            <view wx:else class="preview other">
+              <text class="iconfont icon-baocun" />
+              <text class="name">{{material.name}}</text>
+            </view>
+          </view>
+          <view wx:if="{{materials[item.code].list%2!==0}}" class="material"></view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+  <popup id="the-cut" class="the-cut">
+    <view class="cutContain" catch:tap="prevent">
+      <audioCut id="audioCut" bind:confirm="onAudioCutConfirm" bind:cancel="onAudioCutCancel" />
+    </view>
+  </popup>
+</view>

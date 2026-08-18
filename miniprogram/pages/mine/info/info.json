@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar",
+    "single-edit": "/components/info/single-edit/single-edit"
+  },
+  "disableScroll": true,
+  "navigationStyle": "custom",
+  "componentFramework": "glass-easel"
+}

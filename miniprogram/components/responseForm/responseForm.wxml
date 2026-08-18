@@ -1,0 +1,60 @@
+<view class="responseForm" catch:tap="prevent">
+  <view class="dataForm">
+      <view class="field">
+        <text class="label">回复类型</text>
+        <view class="responseTypes">
+          <text wx:for="{{responseTypes}}" wx:key="value"
+            class="typeChip {{form.responseType === item.value ? 'active' : ''}}"
+            data-value="{{item.value}}" bind:tap="onResponseTypeTap">{{item.label}}</text>
+        </view>
+      </view>
+      <view class="field">
+        <text class="label">姓名</text>
+        <input class="input" placeholder="请输入姓名" maxlength="20"
+          value="{{form.guestName}}" data-key="guestName" bind:input="onInput" />
+      </view>
+      <view class="field">
+        <text class="label">手机号</text>
+        <input class="input" type="number" placeholder="请输入手机号" maxlength="11"
+          value="{{form.guestPhone}}" data-key="guestPhone" bind:input="onInput" />
+      </view>
+      <view class="field">
+        <text class="label">参加人数</text>
+        <view class="counter">
+          <text class="op iconfont icon-jian" data-op="-" bind:tap="onCountChange" />
+          <text class="num">{{form.guestCount}}</text>
+          <text class="op iconfont icon-tianjia" data-op="+" bind:tap="onCountChange" />
+        </view>
+      </view>
+      <view class="field">
+        <text class="label">座位偏好</text>
+        <input class="input" placeholder="如：靠前、靠窗等" maxlength="50"
+          value="{{form.seatInfo}}" data-key="seatInfo" bind:input="onInput" />
+      </view>
+      <view class="field">
+        <text class="label">祝福语</text>
+        <textarea class="textarea" placeholder="写下您的祝福..." maxlength="200"
+          value="{{form.blessing}}" data-key="blessing" bind:input="onInput" />
+      </view>
+      <view class="field row">
+        <text class="label">需要住宿</text>
+        <switch checked="{{form.needAccommodation}}" data-key="needAccommodation"
+          bind:change="onSwitchChange" color="var(--color-abf2)" />
+      </view>
+      <view class="field" wx:if="{{form.needAccommodation}}">
+        <text class="label">住宿要求</text>
+        <input class="input" placeholder="请输入住宿要求" maxlength="100"
+          value="{{form.accommodationDetail}}" data-key="accommodationDetail" bind:input="onInput" />
+      </view>
+      <view class="field row">
+        <text class="label">需要接送</text>
+        <switch checked="{{form.needPickup}}" data-key="needPickup"
+          bind:change="onSwitchChange" color="var(--color-abf2)" />
+      </view>
+      <view class="field" wx:if="{{form.needPickup}}">
+        <text class="label">接送详情</text>
+        <input class="input" placeholder="如：车站/机场、时间等" maxlength="100"
+          value="{{form.pickupDetail}}" data-key="pickupDetail" bind:input="onInput" />
+      </view>
+  </view>
+</view>

@@ -1,0 +1,107 @@
+page-meta {
+  display: flex; //不生效，一定要写在内联中或者class中，费解
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  color: var(--color-abf1);
+
+  .center {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .navIcon {
+      font-size: var(--size-m);
+      margin-left: 1rem;
+      position: absolute;
+      left: 0;
+      z-index: 1;
+      color: var(--color-line);
+    }
+
+    .navInput {
+      height: 100%;
+      // width: 100%;
+      flex: 1 0 0;
+      background-color: var(--color-absbg);
+      color: var(--color-line);
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+      border-radius: 2rem;
+    }
+
+    .navbtn {
+      font-size: var(--size-m);
+      padding-right: .5rem;
+      position: absolute;
+      right: 0;
+      z-index: 1;
+      color: var(--color-abf2);
+    }
+  }
+
+  .contain {
+    flex: 1;
+    position: relative;
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--length-height));
+    // width: calc(100% - 2rem);
+    width: 100%;
+    margin: auto;
+    flex-direction: column;
+    display: flex;
+
+    &>.header {
+      height: 3rem;
+      padding-top: .5rem;
+      margin-bottom: .5rem;
+
+      text {
+        display: flex;
+        align-items: center;
+        margin: 0 1rem;
+        height: 2rem;
+
+        &.active {
+          // border-bottom: solid 2px var(--color-abf2);
+          color: var(--color-abf2);
+        }
+      }
+    }
+  }
+
+  .swiper {
+    flex: 1;
+
+    &>swiper {
+      height: 100%;
+
+      &>swiper-item {
+        height: 100%;
+
+        &>scroll-view {
+          height: 100%;
+
+          .swiperList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+
+            .template {
+              width: 50vw;
+              // height: calc(50vw / 0.667);
+              margin-bottom: .5rem;
+
+              image {
+                width: 100%;
+                // height: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

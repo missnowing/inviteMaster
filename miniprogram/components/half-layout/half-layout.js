@@ -1,0 +1,196 @@
+import { setTabbar } from "../../store/global";
+const { shared, timing, Easing } = wx.worklet
+const GestureState = {
+  POSSIBLE: 0, // 0 此时手势未识别，如 panDown等
+  BEGIN: 1, // 1 手势已识别
+  ACTIVE: 2, // 2 连续手势活跃状态
+  END: 3, // 3 手势终止
+  CANCELLED: 4, // 4 手势取消，
+}
+const _dark = "../../assets/img/default/dark.png",
+  _light = "../../assets/img/default/light.png";
+Component({
+  options: {
+    multipleSlots: true // 在组件定义时的选项中启用多slot支持
+  },
+  data: {
+    style: "",          //自定义Style
+    image: "",
+  },
+  properties: {
+    props: {
+      type: Object,
+      value: {
+        bgImg: ""
+      },
+    },
+    back: {
+      type: Boolean,
+      value: true,
+    },
+    fade: {
+      type: Boolean,
+      value: false,
+    },
+    height: {
+      type: String,
+      value: '70vh'
+    },
+    background: {
+      type: String,
+      value: ''
+    },
+    hideScroll: !1,
+  },
+  observers: {
+    props(current) {
+      current && this.initProps();
+    }
+  },
+  lifetimes: {
+    created() {
+      this.transY = shared(1000)
+      this.scrollTop = shared(0)
+      this.startPan = shared(true)
+      this.commentHeight = shared(1000)
+
+      // this.opacity = shared(0);
+      this.imageSet = new Set();
+    },
+    ready() {
+      const query = this.createSelectorQuery()
+      // ready 生命周期里才能获取到首屏的布局信息
+      query.select('.contain').boundingClientRect()
+      query.exec((res) => {
+        console.log(res);
+        // this.transY.value = this.commentHeight.value = res[0].height
+      })
+      // 通过 transY 一个 SharedValue 控制半屏的位置
+      this.applyAnimatedStyle('.contain', () => {
+        'worklet'
+        return { transform: `translateY(${this.transY.value}px);translateX(0px);` }
+      })
+      this.applyAnimatedStyle('.bg', () => {
+        'worklet'
+        const dif = this.transY.value / this.commentHeight.value;
+        return { opacity: `${0.5 - dif}`, transform: `scale(${this.transY.value === this.commentHeight.value ? '0' : '1'})` }
+      })
+      // this.applyAnimatedStyle('.image', () => {
+      //   'worklet'
+      //   return { opacity: this.opacity.value }
+      // });
+    },
+  },
+  methods: {
+    onError(e) {
+      const theme = getApp().globalData.system.theme;
+      console.log("error", e.detail.errMsg, theme);
+      this.setData({ image: theme === 'dark' ? _dark : _light });
+    },
+    onTapOpenComment() {
+      // this.setData({ fade: !1 });     //手动打开窗口时关闭图片渐变效果,onload后再设置为渐变，避免图片onload从缓存时也走渐变
+      if (!this.imageSet.has(this.data.image)) {
+        this.setData({ fade: !0 })
+        this.imageSet.add(this.data.image);
+      } else this.setData({ fade: !1 })
+      this.openComment(500);
+    },
+    openComment(duration) {
+      'worklet'
+      console.log("openComment");
+      this.transY.value = timing(0, { easing: Easing.bezier(0.25, 1, 0.5, 1) })
+      // this.opacity.value = timing(1, { duration: 500, });
+      // wx.worklet.runOnJS(this.initProps.bind(this))();
+    },
+    onTapCloseComment() {
+      console.log("onTapCloseComment")
+      this.closeComment()
+    },
+    closeComment() {
+      'worklet'
+      console.log("closeComment");
+      this.transY.value = timing(this.commentHeight.value)
+      // this.opacity.value = timing(0);
+      wx.worklet.runOnJS(this.releaseProps.bind(this))();
+    },
+    // shouldPanResponse 和 shouldScrollViewResponse 用于 pan 手势和 scroll-view 滚动手势的协商
+    shouldPanResponse() {
+      'worklet'
+      return this.startPan.value
+    },
+    shouldScrollViewResponse(pointerEvent) {
+      'worklet'
+      // transY > 0 说明 pan 手势在移动半屏，此时滚动不应生效
+      if (this.transY.value > 0) return false
+      const scrollTop = this.scrollTop.value
+      const { deltaY } = pointerEvent
+      // deltaY > 0 是往上滚动，scrollTop <= 0 是滚动到顶部边界，此时 pan 开始生效，滚动不生效
+      const result = scrollTop <= 0 && deltaY > 0
+      this.startPan.value = result
+      return !result
+    },
+    handlePan(gestureEvent) {
+      'worklet'
+      if (gestureEvent.state === GestureState.ACTIVE) {
+        const curPosition = this.transY.value
+        const destination = Math.max(0, curPosition + gestureEvent.deltaY)
+        if (curPosition === destination) return
+        this.transY.value = destination
+      }
+
+      if (gestureEvent.state === GestureState.END || gestureEvent.state === GestureState.CANCELLED) {
+        if (gestureEvent.velocityY > 500 && this.transY.value > 50) {
+          this.closeComment()
+        } else if (this.transY.value > this.commentHeight.value / 2) {
+          this.closeComment()
+        } else {
+          this.openComment(100)   //反弹回顶部
+        }
+      }
+    },
+    adjustDecelerationVelocity(velocity) {
+      'worklet'
+      const scrollTop = this.scrollTop.value
+      return scrollTop <= 0 ? 0 : velocity
+    },
+    handleScroll(evt) {
+      'worklet'
+      this.scrollTop.value = evt.detail.scrollTop
+    },
+
+    /** 自定义方法 */
+    initProps() {
+      const { bgImg, isVague, fontcolor } = this.data.props;
+      console.log(`bgImg:${bgImg}\n${isVague}\nfontcolor:${fontcolor}`);
+      if (bgImg) {
+        // let style = `background:url(${bg});background-size:cover;transform:scale(1.05);`;
+        // if (isVague) style += `filter:blur(20px);transform:scale(1.2);`;
+        this.setData({ image: bgImg });
+      }
+    },
+    releaseProps() {
+      setTimeout(() => {
+        this.setData({
+          style: ``,
+          image: '../../assets/img/transparent.png',
+          bgImg: '',
+          bgColor: '',
+          bgStyle: '',
+        });
+        this.triggerEvent('close', {});
+      }, 200);
+    },
+    tapBG() {
+      this.onTapCloseComment();
+    },
+    //image的onload，用于使图片渐隐
+    loadImage() {
+      // this.opacity.value = timing(1, { duration: 500, });
+      console.log("onload");
+      // wx.showModal({
+      //   content: 'onload'
+      // })
+      this.setData({ fade: true })
+    },
+  },
+})

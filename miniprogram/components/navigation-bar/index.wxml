@@ -1,0 +1,31 @@
+<view class="navigation-bar">
+  <view class="navigation-bar__inner {{ios ? 'ios' : 'android'}}" style="height:{{statusBarHeight + 48}}px;padding-top: {{statusBarHeight}}px; color: {{color}};background: {{background}}">
+    <!--<view class='navigation-bar__left' style="width: {{sideWidth}}px;">-->
+    <view wx:if="{{title}}" class="navigation-bar_title" style="top:{{statusBarHeight}};left:0;">{{title}}</view>
+    <view class='navigation-bar__left' style="height:{{rect.height}}px;margin-top:{{rect.top-statusBarHeight}}px">
+      <block wx:if="{{back}}">
+        <view class="navigation-bar__buttons" bindtap="back" 
+          style="width:{{sideWidth}}px;height:100%;display: flex;align-items: center;">
+          <!-- <image class="navigation-bar__button navigation-bar__btn_goback" hover-class="active" src="../../images/back-arrow.png"></image> -->
+          <text class="iconfont icon-zuojiantou" 
+            style="font-size:var(--size-l);font-weight:bold;"/>
+        </view>
+      </block>
+      <block wx:elif="{{leftPart}}">
+        <view style="width:{{sideWidth}}px;height:100%;">
+          <slot name="left"></slot>  
+        </view>
+      </block>
+      <block wx:else>
+        <slot name="left"></slot>
+      </block>
+    </view>
+    <view class="navigation-bar__center {{title ? 'title' : ''}}"
+      style="height:{{rect.height}}px;margin-top:{{rect.top-statusBarHeight}}px" >
+      <slot name="center"></slot>
+    </view>
+    <view class='navigation-bar__right' style="width: {{sideWidth}}px;">
+      <slot name="right"></slot>
+    </view>
+  </view>
+</view>

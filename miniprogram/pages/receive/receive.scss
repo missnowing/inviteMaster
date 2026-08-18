@@ -1,0 +1,158 @@
+@import '../../global.scss';
+
+page-meta {
+    display: flex; //不生效，一定要写在内联中或者class中，费解
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    overflow: auto;
+    color: var(--color-abf1);
+
+    .contain {
+        flex: 1;
+        position: relative;
+        // padding-bottom: calc(env(safe-area-inset-bottom) + var(--length-height));
+        width: 100%;
+        align-items: center;
+        margin: auto;
+        flex-direction: column;
+        display: flex;
+
+        .music {
+            border-radius: 50%;
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            z-index: 999;
+            background-color: var(--colorB-abf2);
+            border: solid 1px var(--color-abf2);
+
+            &.play {
+                @include _playRotate(3s);
+            }
+        }
+
+        scroll-view {
+            width: 100%;
+            height: 100%;
+
+            #snapshot {}
+
+            .templateBG {
+                width: 100%;
+                position: relative;
+
+                image {
+                    width: 100%;
+                    // z-index: 99;
+                }
+
+                // .templateList {
+                //     position: absolute;
+                //     inset: 0;
+                //     width: 100%;
+                //     height: 100%;
+
+                &>view {
+                    position: absolute;
+
+                    &.mark {
+                        border: dotted 1px var(--color-abf1);
+                    }
+
+                    &>text {
+                        // color: inherit;
+                    }
+
+                    &>image {
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+
+                // }
+            }
+        }
+
+        &>.footer {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            height: var(--length-height);
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom) + var(--length-height) / 2);
+            width: 100%;
+
+            &>view {
+                display: flex;
+                flex: 1 0 0;
+
+                &>text {
+                    background: var(--color-tabbg);
+                    padding: 0.5rem;
+                    margin: 1rem;
+                    border-radius: 1rem;
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                &>.replay {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    #the-response {
+        .card-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-sline);
+            flex-shrink: 0;
+
+            .title {
+                font-size: var(--size-m);
+                color: var(--color-abf1);
+                font-weight: bold;
+            }
+
+            .close {
+                position: absolute;
+                right: 1rem;
+                color: var(--color-abf4);
+                font-size: var(--size-m);
+            }
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-top: 1px solid var(--color-sline);
+            flex-shrink: 0;
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+
+            .btn {
+                flex: 1;
+                text-align: center;
+                padding: .6rem;
+                border-radius: 1.5rem;
+                font-size: var(--size-n);
+
+                &.cancel {
+                    color: var(--color-abf3);
+                    background: var(--color-item-bg);
+                }
+
+                &.submit {
+                    color: var(--color-submit-btn-font);
+                    background: var(--color-submit-btn-bg);
+                }
+            }
+        }
+    }
+}

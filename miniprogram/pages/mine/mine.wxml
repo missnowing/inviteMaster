@@ -1,0 +1,79 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <tab-bar selected="{{2}}"/>
+  <navigation-bar bind:bindMenu="bindMenu">
+  </navigation-bar>
+  <view class="contain">
+    <view class="header" bind:tap="tapMore">
+      <view class="portrait">
+        <image wx:if="{{userinfo.avatarUrl}}" src="{{_CDN + userinfo.avatarUrl}}" />
+        <text wx:else class="iconfont icon-wode" />
+      </view>
+      <view class="info">
+        <text>{{userinfo.nickName || userinfo.realName || '取个名字吧'}}</text>
+        <view>
+        </view>
+      </view>
+      <text class="more icon-a-youjiantou_huaban1" />
+    </view>
+    <snapshot id="snapshot">
+      <image mode="aspectFit" src="{{_CDN + snapItem.coverImage}}" />
+    </snapshot>
+    <view class="body">
+      <view class="menu">
+        <text wx:for="{{navs}}" wx:for-item="nav" wx:key="name"
+          class="{{selectIndex === index ? 'active':''}}"
+          bind:tap="tapNav" data-index="{{index}}">{{nav.name}}</text>
+      </view>
+      <view class="list">
+        <view class="deploys {{selectIndex === 0 ? 'active':''}}">
+            <scroll-view scroll-y show-scrollbar="{{false}}" type="list"
+                scroll-behavior="smooth" scroll-with-animation="true"
+                scroll-into-view="{{into}}" scroll-into-view-alignment="center">
+                <view class="deploy" wx:for="{{invitations}}" 
+                 data-item="{{item}}" bind:tap="tapDetail">
+                    <view class="top">
+                        <view class="left">
+                            <text class="cate">{{item.eventType}}</text>
+                            <text class="iconfont icon-renyuan" /> 0/40
+                        </view>
+                        <view class="right">
+                            <view class="share" catch:tap="tapShare" data-item="{{item}}">
+                                <button open-type="share" plain size="mini" data-item="{{item}}">
+                                    <text class="iconfont icon-fenxiang" />
+                                </button>
+                            </view>
+                        </view>
+                    </view>
+                    <text class="date">{{item.date_}}</text>
+                    <text class="_ellipsis content">{{item.title}}</text>
+                </view>
+                <!--
+                <view class="sep">
+                    <text>历史发布</text>
+                </view>
+                -->
+            </scroll-view>
+        </view>
+        <view class="cates {{selectIndex === 1 ? 'active':''}}">
+          <scroll-view scroll-y show-scrollbar="{{false}}" type="list"
+              scroll-behavior="smooth" scroll-with-animation="true"
+              scroll-into-view="{{into}}" scroll-into-view-alignment="center">
+              <view class="scrollContain">
+                  <share-element wx:for="{{favorites}}" class="cate" transition-on-gesture
+                      wx:for-item="invitation" key="se-{{invitation.id}}" transform 
+                      data-se="se-{{invitation.id}}" data-bg="{{_CDN + invitation.coverImage}}" 
+                      data-item="{{invitation}}" 
+                      bind:tap="tapShow">
+                    <image src="{{_CDN + invitation.coverImage}}" mode="aspectFill" lazy-load="{{false}}"  />
+                  </share-element>
+                  <view wx:if="{{favorites%2!==0}}" class="cate"></view>
+              </view>
+          </scroll-view>
+        </view>
+        <view class="materials {{selectIndex === 2 ? 'active':''}}">
+          <material />
+        </view>
+      </view>
+    </view>
+  </view> 
+</page-meta>

@@ -1,0 +1,7 @@
+  <root-portal wx:if="{{show}}" >
+    <view class="program" bind:tap="close" style="top: {{statusBarHeight + rect.top}}px;">
+        <view class="sqrt" style="right:calc({{rect.width / 2}}px + .5rem);"/>
+        <text>点击右上角·<text style="font-weight:900">·</text>·选择<text style="color:#ffc817">“收藏”</text>或者<text style="color:#ffc817">“添加到我的小程序”</text>下次打开名片更方便</text>
+        <view class="footer"><text class="iwallet1 iwallet1-chahao-01"/></view>
+    </view>
+  </root-portal>

@@ -1,0 +1,13 @@
+{
+    "usingComponents": {
+        "navigation-bar": "/components/navigation-bar",
+        "half-layout": "/components/half-layout/half-layout",
+        "lunar-picker": "/components/lunar-picker/lunar-picker",
+        "color-picker": "/components/color-picker/color-picker",
+        "popup": "/components/popup1/popup1",
+        "material": "/components/material/material"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "componentFramework": "glass-easel"
+}

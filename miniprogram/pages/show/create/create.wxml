@@ -1,0 +1,257 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <navigation-bar bind:bindMenu="bindMenu" back>
+  </navigation-bar>
+  <view class="contain">
+    <text wx:if="{{invitation.backgroundMusic || template.backgroundMusic}}" class="music iconfont icon-yinle {{play?'play':''}}" bind:tap="tapPlay"/>
+    <scroll-view scroll-y scrollbar="false" type="list">
+        <snapshot id="snapshot">
+            <view class="templateBG" bind:tap="">
+                <image src="{{template.bg || template.coverImage}}" mode="widthFix"  />
+                <view wx:for="{{template._templateData}}" wx:for-item="element" key=""
+                    bind:tap="tapEditElement" data-item="{{element,index}}"
+                    style="{{element.style}}" class="{{editMode && element.visible ? 'mark':''}}">
+                    <image wx:if="{{element.type === 'image'}}" 
+                        mode="aspectFill" src="{{element.name}}"/>
+                    <text wx:else>{{element.name}}</text>
+                </view>
+            </view>
+        </snapshot>
+    </scroll-view>
+    <view class="footer">
+        <view>
+            <text bind:tap="tapShowEdit">编辑</text>
+        </view>
+        <view>
+            <text bind:tap="tapSave">保存</text>
+        </view>
+    </view>
+  </view> 
+  <half-layout id="the-elementEdit" bind:close="layoutClose" back="{{!1}}" height="70vh">
+    <view slot="header" class="elementEdit-header">
+    </view>
+    <view slot="content" class="elementEdit-content">
+      <view class="elementImage" wx:if="{{popElement.element.type === 'image'}}">
+        <view class="content">
+          <image src="{{popElement.element.name}}" mode="aspectFit" />
+        </view>
+        <view class="footer">
+          <button bind:tap="tapMaterial" data-select="image">更换图片</button>
+        </view>
+      </view>
+      <view class="elementData" wx:else>
+        <view class="header">
+            <view wx:for="{{attrs.list}}" wx:for-index="index">
+                <text bind:tap="tapAttrChange" data-index="{{index}}"
+               class="{{index === attrs.select ? 'active':''}}">{{item}}</text>
+            </view>
+        </view>
+        <view class="footer">
+            <textarea wx:if="{{popElement.element.type === 'textarea'}}" class="textarea" value="{{popElement.element.name}}" 
+                focus="{{popFocus}}"
+                placeholder-class="textarea1" 
+                placeholder-style="{{color:'#999999'}}"
+                confirm-type="done"
+                bindinput="onInput">
+            </textarea>
+            <input wx:else type="text" bind:input="onInput" 
+                value="{{popElement.element.name}}" focus="{{popFocus}}"/>
+        </view>
+        <view class="content">
+            <view class="fonts attrSelect" wx:if="{{attrs.select === 0}}">
+                <!--<picker bindchange="bindTemplateDataIndexChange" 
+                    value="{{editTemplateData.fontFamily.select}}" range="{{editTemplateData.fontFamily.list}}" range-key="name"
+                    data-key="font-family"
+                    >
+                    <view class="picker" style="font-family:{{editTemplateData.fontFamily.list[editTemplateData.fontFamily.select].font}}">
+                        {{editTemplateData.fontFamily.list[editTemplateData.fontFamily.select].name}}
+                    </view>
+                </picker>-->
+                <text wx:for="{{editTemplateData.fontFamily.list}}" bind:tap="bindTemplateDataIndexChange"
+                    data-key="font-family" data-index="{{index}}" style="font-family:{{item.name}}">{{item.name}}</text>
+            </view>
+            <view class="sizes attrSelect" wx:if="{{attrs.select === 1}}">
+                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.fontSize}}" 
+                    data-key="font-size" data-px="true"
+                    min="1" max="25" step="1" show-value />
+            </view>
+            <view class="letterSpacings attrSelect" wx:if="{{attrs.select === 2}}">
+                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.letterSpacing}}" 
+                    data-key="letter-spacing" data-px="true"
+                    min="0" max="10" step="1" show-value />
+            </view>
+            <view class="lineHeights attrSelect" wx:if="{{attrs.select === 3}}">
+                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.lineHeight}}" 
+                    data-key="line-height" data-px=""
+                    min=".5" max="3" step=".5" show-value />
+            </view>
+            <view class="textAligns attrSelect" wx:if="{{attrs.select === 4}}">
+                <text wx:for="{{editTemplateData.textAlign.list}}" bind:tap="bindTemplateDataIndexChange"
+                    data-key="text-align" data-index="{{index}}" 
+                    class="iconfont {{item.name}} {{editTemplateData.textAlign.list[editTemplateData.textAlign.select].name === item.name ? 'active':''}}" />
+                <!--<picker bindchange="bindTemplateDataIndexChange" value="{{editTemplateData.textAlign.select}}" 
+                    range="{{editTemplateData.textAlign.list}}" range-key="name"
+                    data-key="text-align"
+                    >
+                    <view class="picker">
+                        {{editTemplateData.textAlign.list[editTemplateData.textAlign.select].name}}
+                    </view>
+                </picker>-->
+            </view>
+            <view class="colors attrSelect" wx:if="{{attrs.select === 5}}">
+                <color-picker bind:changecolor="bindTemplateDataChange"
+                    data-key="color" 
+                ></color-picker>
+            </view>
+        </view>
+      </view>
+    </view>
+  </half-layout>
+  <half-layout id="the-edit" back="{{!1}}" height='90vh' bind:close="layoutClose" background="var(--color-absbg)">   
+    <view slot="header" class="edit-header">
+        <view class="header">
+            <text bind:tap="tapTempRemove" class="_button">清除</text>
+            <text bind:tap="tapTempSave" class="_button">保存</text>
+        </view>
+    </view>
+    <view slot="content" class="edit-content">
+      <view class="fixData">
+        <view>
+            <text>主题</text>
+            <input type="text" placeholder="请输入主题" value="{{invitation.title}}"
+                bind:input="bindContentChange" data-key="title" focus="{{titleFocus}}" />
+        </view>
+        <view>
+            <text>日期</text>
+            <picker class="picker" mode="date" bindchange="onDateChange" 
+                value="{{invitation.eventDate}}" start="{{startDate}}">
+                <view class="pickerDate">
+                    <text wx:if="{{invitation.eventDate}}" class="_ellipsis" style="color:var(--color-abf2)">{{invitation.eventDate}}</text>
+                    <text wx:else style="color:var(--color-abf4)">点击选择日期</text>
+                    <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+                </view>
+            </picker>
+        </view>
+        <view>
+            <text bind:tap="tapLunar">农历</text>
+            <view class="_ellipsis lunarDate">{{showLunar ? invitation.lunarDate : ''}}</view>
+        </view>
+        <view>
+            <text>时间</text>
+            <picker class="picker" mode="time" bindchange="onTimeChange" 
+                value="{{invitation.eventTime}}">
+                <view class="pickerDate">
+                    <text wx:if="{{invitation.eventTime}}" class="_ellipsis" style="color:var(--color-abf2)">{{invitation.eventTime}}</text>
+                    <text wx:else style="color:var(--color-abf4)">点击选择时间</text>
+                    <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+                </view>
+            </picker>
+        </view>
+        <view>
+            <text>地点</text>
+            <view class="pickerLocation">
+                <textarea placeholder="选择定位后补充详细地址" value="{{invitation.eventAddress}}"
+                    bind:input="bindContentChange" data-key="eventAddress" />
+                <text class="iconfont icon-dingweixiao" bind:tap="tapLocation"
+                    style="color:{{invitation.longitude && invitation.latitude ? 'var(--color-abdicon)' : 'var(--color-abdicon)'}};" />
+            </view>
+        </view>
+        <view>
+            <text>邀请词</text>
+            <textarea placeholder="请输入邀请词" value="{{invitation._eventContent}}"
+                bind:input="bindContentChange" data-key="_eventContent" focus="{{titleFocus}}" />
+        </view>
+        <view>
+            <text>邀请人</text>
+            <input type="nickname" placeholder="请输入邀请人" value="{{invitation.hostName || userInfo.nickName || userInfo.realName}}"
+                bind:input="bindContentChange" data-key="hostName"/>
+        </view>
+        <!--
+        <view>
+            <text>地点</text>
+            <view class="pickerLocation" bind:tap="tapLocation" style="height:4rem;">
+                <text wx:if="{{invitation.longitude && invitation.latitude}}" 
+                    style="color:var(--color-abf2)">{{invitation._eventAddress}}</text>
+                <text wx:else style="color:var(--color-abf4)">点击选择定位</text>
+                <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+            </view>
+        </view>
+        -->
+        <!--
+        <view>
+            <text>背景音乐</text>
+            <view class="pickerMusic _ellipsis" bind:tap="tapMaterial" data-select="music">
+                <block wx:if="{{template.backgroundMusic || invitation.backgroundMusic}}">
+                    <text class="iconfont {{play?'icon-zanting':'icon-bofang'}}"
+                        catch:tap="tapPlay" style="padding:0 1rem"/>
+                    <view class="musicTitle">
+                        <text>{{invitation.backgroundMusic && material.name}}</text>
+                    </view>
+                    <text class="iconfont icon-guanbijiantou" catch:tap="tapCancelMusic"
+                        style="color:var(--color-abdicon);padding:0 1rem" />
+                </block>
+                <text wx:else class="iconfont icon-yinle" style="margin-left: auto;" />
+            </view>
+        </view>
+        -->
+      </view>
+      <view class="selectMusic">
+        <text wx:if="{{template.backgroundMusic || invitation.backgroundMusic}}" class="iconfont icon-yinle {{play?'play':''}}" catch:tap="tapPlay" />
+        <text wx:else class="iconfont icon-MP_" bind:tap="tapMaterial" data-select="music" />
+      </view>
+      <view class="options">
+        <view>
+            <switch type="switch" checked="{{invitation.allowAnonymous}}" 
+                data-key="allowAnonymous"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>允许匿名参加</text>
+        </view>
+        <view>
+            <switch type="switch" checked="{{invitation.needPhone}}" 
+                data-key="needPhone"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>需要填写手机</text>
+        </view>
+        <view>
+            <switch type="switch" checked="{{invitation.allowModifyGuests}}" 
+                data-key="allowModifyGuests"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>可以携带多人</text>
+        </view>
+        <view>
+            <switch type="switch" checked="{{invitation.allowDownloadPhotos}}" 
+                data-key="allowDownloadPhotos"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>允许下载活动照片</text>
+        </view>
+        <view>
+            <switch type="switch" checked="{{invitation.allowUploadPhotos}}" 
+                data-key="allowUploadPhotos"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>允许上传活动照片</text>
+        </view>
+        <view>
+            <switch type="switch" checked="{{invitation.enableMessage}}" 
+                data-key="enableMessage"
+                bind:change="bindOptionChange">
+            </switch>
+            <text>允许发表活动感言</text>
+        </view>    
+      </view>
+    </view>
+  </half-layout>
+  <popup id="the-material">
+    <view class="material" catch:tap="prevent">
+        <view class="content">
+            <material mode="select" select="{{materialSelect}}" bind:trigger="triggerMaterial" />
+        </view>
+        <view class="footer">
+
+        </view>
+    </view>
+  </popup>
+</page-meta>

@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar",
+    "half-layout": "/components/half-layout/half-layout",
+    "popup": "/components/popup1/popup1",
+    "responseForm": "/components/responseForm/responseForm"
+  },
+  "disableScroll": true,
+  "navigationStyle": "custom",
+  "componentFramework": "glass-easel"
+}

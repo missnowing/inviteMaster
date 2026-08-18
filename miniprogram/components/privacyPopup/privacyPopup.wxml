@@ -1,0 +1,15 @@
+<popup show="{{innerShow}}" bind:close="onTriggerClose" bind:attached="onTriggerattached">
+  <view class="dialog">
+      <view class="header">
+          <text class="title">{{title}}</text>
+      </view>
+      <scroll-view class="section" scroll-y>
+          <view class="tips">{{desc1}}</view>
+      </scroll-view>
+      <view class="footer">
+          <view class="contract" bindtap="openPrivacyContract">{{urlTitle}}</view>
+          <button class="agree" type="default" open-type="agreePrivacyAuthorization" bindagreeprivacyauthorization="handleAgree">同意并继续</button>
+          <button class="disagree" type="default" bindtap="handleDisagree">不同意，并退出</button>
+    </view>
+  </view>
+</popup>

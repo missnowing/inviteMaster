@@ -1,0 +1,99 @@
+<view class="audio-cut-container">
+    <!-- 上传区域：未加载音频时显示 -->
+    <view class="upload-area" wx:if="{{!isAudioLoaded}}">
+        <view class="upload-icon">
+            <text class="iconfont icon-yinle" />
+        </view>
+        <view class="upload-tip">支持 MP3, WAV, M4A, OGG, AAC (最大50MB)</view>
+        <button class="upload-btn" bind:tap="chooseAudio">选择音频文件</button>
+    </view>
+
+    <!-- 音频编辑区域：加载音频后显示 -->
+    <view class="editor-area" wx:if="{{isAudioLoaded}}">
+        <!-- 文件信息 -->
+        <view class="file-info">
+            <text class="file-name">{{audioName}}</text>
+            <text class="file-duration">总时长: {{formattedDuration}}</text>
+        </view>
+
+        <!-- 波形图 -->
+        <view class="waveform-container">
+            <canvas type="2d" id="waveformCanvas" class="waveform-canvas" bind:tap="onWaveformTap" />
+        </view>
+
+        <!-- 时间范围滑块 -->
+        <view class="slider-group">
+            <view class="slider-item">
+                <view class="slider-label">
+                    <text>开始时间</text>
+                    <text class="time-value">{{startDisplay}}s</text>
+                </view>
+                <slider
+                    min="0"
+                    max="{{maxStart}}"
+                    step="0.1"
+                    value="{{startTime}}"
+                    activeColor="#3b82f6"
+                    backgroundColor="#cbd5e1"
+                    block-size="18"
+                    block-color="#3b82f6"
+                    bind:changing="onStartChanging"
+                    bind:change="onStartChange"
+                />
+            </view>
+            <view class="slider-item">
+                <view class="slider-label">
+                    <text>结束时间</text>
+                    <text class="time-value">{{endDisplay}}s</text>
+                </view>
+                <slider
+                    min="0"
+                    max="{{audioDuration}}"
+                    step="0.1"
+                    value="{{endTime}}"
+                    activeColor="#3b82f6"
+                    backgroundColor="#cbd5e1"
+                    block-size="18"
+                    block-color="#3b82f6"
+                    bind:changing="onEndChanging"
+                    bind:change="onEndChange"
+                />
+            </view>
+        </view>
+
+        <!-- 区间信息 -->
+        <view class="segment-info">
+            <text>选取区间长度: <text class="segment-len">{{segmentLen}}s</text></text>
+            <text class="segment-badge {{segmentLen >= 30 ? 'ok' : 'warn'}}">
+                {{segmentLen >= 29.5 ? '30秒区间' : '尾部不足30秒'}}
+            </text>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view class="action-buttons">
+            <button class="btn btn-primary" bind:tap="playOriginal">
+                <text class="iconfont icon-bofang" /> 预览选中片段
+            </button>
+            <button class="btn btn-secondary" bind:tap="stopAudio">
+                <text class="iconfont icon-zanting" /> 停止播放
+            </button>
+            <button class="btn btn-reset" bind:tap="resetInterval">重置区间</button>
+        </view>
+
+        <view class="action-buttons bottom">
+            <button class="btn btn-confirm" bind:tap="confirmCut" loading="{{isCropping}}">
+                确认裁剪并提交
+            </button>
+            <button class="btn btn-cancel" bind:tap="onCancel">取消</button>
+        </view>
+
+        <view class="info-tip">
+            拖动滑块选择30秒区间，点击波形图可快速定位。预览确认后点击"确认裁剪并提交"。
+        </view>
+    </view>
+
+    <!-- 错误提示 -->
+    <view class="error-msg" wx:if="{{errorMsg}}" bind:tap="clearError">
+        <text>{{errorMsg}}</text>
+    </view>
+</view>

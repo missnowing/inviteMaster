@@ -1,0 +1,8 @@
+  <root-portal wx:if="{{show}}">
+    <view wx:if="{{mask}}" class="popup" bind:tap="close" style="{{maskStyle}}">
+      <slot></slot>
+    </view>
+    <view wx:else>
+      <slot></slot>
+    </view>
+  </root-portal>

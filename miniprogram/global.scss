@@ -1,0 +1,325 @@
+/**———————————————————flex相关—————————————————————**/
+._fx {
+  display: flex;
+}
+
+.flex,
+._flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+._fxAC {
+  align-items: center;
+}
+
+/**———————————————————格式相关—————————————————————**/
+
+.bold,
+._bold {
+  font-weight: bold;
+}
+
+.bolder,
+._bolder {
+  font-weight: bolder;
+}
+
+.lighter,
+._lighter {
+  font-weight: lighter;
+}
+
+.small,
+._small {
+  font-size: var(--size-s);
+}
+
+.normal,
+._normal {
+  font-size: var(--size-n);
+}
+
+.medium,
+._medium {
+  font-size: var(--size-m);
+}
+
+.large,
+._large {
+  font-size: var(--size-l);
+}
+
+.ellipsis,
+._ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon,
+._icon {
+  font-size: var(--size-icon) !important;
+  font-weight: bold;
+}
+
+.iconL,
+._iconL {
+  font-size: var(--size-large) !important;
+  font-weight: bold;
+}
+
+.safe-area-inset-bottom,
+._safe-area-inset-bottom {
+  width: 100vw;
+  height: env(safe-area-inset-bottom);
+}
+
+.tabbar-safe-area,
+._tabbar-safe-area {
+  width: 100vw;
+  height: calc(var(--length-height) + env(safe-area-inset-bottom));
+}
+
+
+/**———————————————————颜色相关—————————————————————**/
+.colorBlack,
+._colorBlack {
+  color: var(--color-black);
+}
+
+.colordimGray,
+._colordimGray {
+  color: var(--color-dimGray);
+}
+
+.colorGray,
+._colorGray {
+  color: var(--color-Gray);
+}
+
+.colorBG,
+._colorBG {
+  color: var(--color-bg);
+}
+
+.colorDark,
+._colorDark {
+  color: var(--color-dark);
+}
+
+.colorSection,
+._colorSection {
+  color: var(--color-black);
+}
+
+.colorButton,
+._colorButton {
+  color: var(--color-stealBlue);
+}
+
+.colorActive,
+._colorActive {
+  color: var(--color-abf2);
+}
+
+.bgRed,
+._bgRed {
+  color: red;
+}
+
+.bgSection,
+._bgSection {
+  background-color: var(--color-black);
+}
+
+.bgdimGray,
+._bgdimGray {
+  background-color: var(--color-dimGray);
+}
+
+.bgGray,
+._bgGray {
+  background-color: var(--color-gray);
+}
+
+.bgButton,
+._bgButton {
+  background-color: var(--color-stealBlue);
+}
+
+.bgActive,
+._bgActive {
+  background-color: var(--color-abf2);
+}
+
+
+/**———————————————————距离相关—————————————————————**/
+._H100 {
+  height: 100%;
+}
+
+._RS {
+  width: var(--length-width);
+  height: var(--length-height);
+}
+
+._WS {
+  width: var(--length-width);
+}
+
+.M1 {
+  margin: 1rem
+}
+
+.M1H {
+  margin: var(--length-height);
+}
+
+.P1M {
+  padding: 1rem;
+}
+
+
+/**———————————————————————其他—————————————————————**/
+._BoxShadow {
+  box-shadow: 0 0 5px var(--color-gray);
+}
+
+._ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**———————————————————————封装—————————————————————**/
+//标准列表元素1 例：小程序-图标+内容
+._SItem1 {
+  border-radius: calc(var(--length-height) / 2);
+}
+
+._SItem1,
+._SItem2 {
+  width: 100%;
+  min-height: calc(var(--length-height) / 2 + .5rem);
+  max-height: 10rem;
+  padding: .5rem 0;
+  position: relative;
+  overflow: hidden;
+
+  &>view {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  &>view.opacity {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-abdicon);
+  }
+
+  &>view.item {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    color: var(--color-bg);
+
+    &>view {
+      background-color: var(--color-abf5);
+      padding: .25rem;
+      margin: 0 .5rem 0 .25rem;
+      border-radius: 50%;
+
+      &>text {
+        font-size: var(--size-l);
+        color: var(--color-abdicon);
+      }
+    }
+
+    &>text {
+      width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-abf5);
+    }
+  }
+}
+
+._loading {
+  // border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  // background: conic-gradient(pink, yellow);
+  background: conic-gradient(#eeeeee, var(--color-abf2) 20%, #eeeeee 30%, #eeeeee 100%);
+  animation: spin 1s linear infinite;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    transform: translate(5px, 5px);
+    border-radius: 50%;
+    background-color: var(--color-abbg);
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+._button {
+  // height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-abf5);
+  color: var(--color-abf1);
+  padding: .5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+@mixin _button1($color1: var(--color-abf2), $color2: var(--color-tabbg)) {
+  background: linear-gradient(135deg, $color1, $color2);
+  box-shadow: 0 .5rem .5rem $color1, 0 0 0 $color2;
+  padding: 0.5rem;
+  margin: 1rem;
+  border-radius: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@mixin _playRotate($time: 1s) {
+  animation: rotate $time linear infinite;
+  animation-fill-mode: forwards;
+}

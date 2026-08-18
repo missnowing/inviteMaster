@@ -1,0 +1,119 @@
+@import "./global.scss";
+@import "./assets/iconfont/iconfont.scss";
+// @import "//at.alicdn.com/t/c/font_4447154_ibjzg3hl9cq.css";
+
+@media (prefers-color-scheme: dark) {
+  page {
+    background-color: var(--color-abbg) !important;
+    --color-abbg: rgb(14, 24, 30) !important; //界面背景色
+    --color-absbg: rgb(30, 42, 50) !important; //界面区域框色
+    --color-abicon: rgb(224, 241, 255) !important; //小icon色
+    --color-abdicon: rgb(27, 114, 192) !important; //数字资产icon色
+    --color-bigiconbg: rgb(47, 65, 86) !important; //大ICON背景色
+    --color-bigicon: rgb(14, 24, 30) !important; //大ICON色
+    --color-circle: rgb(19, 35, 44) !important; //字母圆圈背景色
+    --color-icon: rgb(215, 226, 255) !important; //TAB栏icon色
+    --color-tabbg: rgb(19, 35, 44) !important; //TAB栏背景色
+    --color-abf1: rgb(224, 241, 255) !important; //界面1级文字色
+    --color-abf2: rgb(162, 201, 255) !important; //界面2级文字色
+    --color-abf3: rgb(168, 173, 189) !important; //界面3级文字色
+    --color-abf4: rgb(79, 82, 93) !important; //界面4级文字色
+    --color-abf5: rgb(224, 241, 255) !important; //界面5级文字色
+    --color-abf6: rgb(161, 94, 25); //界面6级文字色
+    --color-shadow: rgb(25, 25, 25, .1) !important; //阴影色
+    --color-mask: rgb(0, 30, 47) !important; //遮罩层色
+    --color-line: rgb(168, 173, 189) !important; //分隔横线色
+    --color-sline: rgb(15, 27, 33) !important; //短横线色
+    --color-letterbg: rgb(47, 65, 86) !important; //字母列选中背景色
+    --color-bpopbg: rgb(19, 35, 44) !important; //弹出菜单背景色
+    --color-error: rgb(198, 53, 32) !important; //错误色
+
+    --color-item-bg: rgb(30, 42, 50) !important; //内容背景色
+    --color-item-font: rgb(116, 119, 127) !important; //内容字体色
+    --color-item-bg-ck: rgb(27, 114, 192) !important; //内容选中背景色
+    --color-item-font-ck: rgb(255, 255, 255) !important; //内容选中字体色
+    --color-submit-btn-bg: rgb(27, 114, 192) !important; //完成提交按钮背景色
+    --color-submit-btn-font: rgb(255, 255, 255) !important; //完成提交按钮字体色
+
+    --opacity-mask: rgba(0, 30, 47, .5) !important; //遮罩层色rgba
+    --colorA-abf2: rgba(162, 201, 255, .7) !important; //界面2级文字色-添加alpha
+    --colorB-abf2: rgba(162, 201, 255, .2); //界面2级文字色-添加alpha
+  }
+}
+
+page {
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", 微软雅黑, Arial, sans-serif;
+  background-color: var(--color-abbg);
+  --color-abbg: rgb(255, 255, 255); //界面背景色
+  --color-absbg: rgb(248, 248, 248); //界面区域框色
+  --color-abicon: rgb(0, 30, 47); //小icon色
+  --color-abdicon: rgb(27, 114, 192); //数字资产icon色
+  --color-bigiconbg: rgb(0, 30, 47); //大ICON背景色
+  --color-bigicon: rgb(255, 255, 255); //大ICON色
+  --color-circle: rgb(255, 255, 255); //字母圆圈背景色
+  --color-icon: rgb(0, 30, 47); //TAB栏icon色
+  --color-tabbg: rgb(243, 244, 249); //TAB栏背景色
+  --color-abf1: rgb(0, 30, 47); //界面1级文字色
+  --color-abf2: rgb(27, 114, 192); //界面2级文字色
+  --color-abf3: rgb(116, 119, 127); //界面3级文字色
+  --color-abf4: rgb(168, 173, 189); //界面4级文字色
+  --color-abf5: rgb(255, 255, 255); //界面5级文字色
+  --color-abf6: rgb(222, 169, 115); //界面6级文字色
+  --color-shadow: rgb(42, 42, 42, .1); //阴影色
+  --color-mask: rgb(0, 30, 47); //遮罩层色
+  --color-line: rgb(164, 164, 164); //分隔横线色
+  --color-sline: rgb(234, 235, 237); //短横线色
+  --color-letterbg: rgb(19, 35, 44); //字母列选中背景色
+  --color-bpopbg: rgb(255, 255, 255); //弹出菜单背景色
+  --color-error: rgb(198, 53, 32); //错误色
+
+  --color-item-bg: rgb(248, 248, 248); //内容背景色
+  --color-item-font: rgb(116, 119, 127); //内容字体色
+  --color-item-bg-ck: rgb(27, 114, 192); //内容选中背景色
+  --color-item-font-ck: rgb(255, 255, 255); //内容选中字体色
+  --color-submit-btn-bg: rgb(27, 114, 192); //完成提交按钮背景色
+  --color-submit-btn-font: rgb(255, 255, 255); //完成提交按钮字体色
+
+  --opacity-mask: rgba(0, 30, 47, .5); //遮罩层色rgba
+  --colorA-abf2: rgba(27, 114, 192, .7); //界面2级文字色-添加alpha
+  --colorB-abf2: rgba(27, 114, 192, .2); //界面2级文字色-添加alpha
+  --length-width: 4rem;
+  --length-height: 4rem;
+  --length-image: 3rem;
+  --length-margin: 1rem;
+  --length-padding: 1rem;
+
+  --size-xs: .5rem; //16
+  --size-ss: .625rem; //16
+  --size-s: .75rem; //24
+  --size-n: .875rem; //28
+  --size-m: 1rem; //32
+  --size-l: 1.25rem !important; //40
+  --size-title: 1.5rem !important; //48
+  --size-icon: 2rem; //64
+  --size-large: 3rem; //96
+}
+
+page,
+view,
+text,
+image,
+button,
+video,
+map,
+scroll-view,
+swiper,
+input,
+textarea,
+navigator {
+  position: relative;
+  box-sizing: border-box;
+  background-origin: border-box;
+  // isolation: isolate;
+}
+
+page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}

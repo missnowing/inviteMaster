@@ -1,0 +1,165 @@
+page-meta {
+    display: flex; //不生效，一定要写在内联中或者class中，费解
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    overflow: auto;
+    color: var(--color-abf1);
+
+    .title {
+        font-size: var(--size-m);
+        font-weight: bold;
+    }
+
+    .contain {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        width: 100%;
+        background-color: var(--color-abbg);
+        // padding-bottom: env(safe-area-inset-bottom);
+
+        .menu {
+            display: flex;
+            height: var(--length-height);
+            align-items: center;
+            justify-content: space-around;
+
+            &>text {
+                height: 50%;
+            }
+
+            &>.active {
+                border-bottom: solid 2px var(--color-letterbg);
+            }
+        }
+
+        .swiper-form {
+            // height: 0;
+            flex: 1;
+
+            .formScroll {
+                height: 100%;
+
+                .top {
+                    border-top-left-radius: 1rem;
+                    border-top-right-radius: 1rem;
+                    margin-top: .5rem !important;
+                }
+
+                .bottom {
+                    border-bottom-left-radius: 1rem;
+                    border-bottom-right-radius: 1rem;
+                    margin-bottom: .5rem !important;
+
+                    &>view {
+                        border-bottom: none !important;
+
+                    }
+                }
+
+                .row {
+                    // background-color: var(--color-absbg);
+                    background-color: var(--color-tabbg);
+                    margin: 0 1rem;
+                    padding: 0 1rem;
+
+                    &>view {
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: .5rem 0;
+                        border-bottom: solid 1px var(--color-sline);
+
+                        &>view:first-child {
+                            display: flex;
+                            margin-right: .5rem;
+                            max-width: 50%;
+
+                            &>.icon {
+                                margin-right: .5rem;
+
+                                &>text {
+                                    border-radius: 50%;
+                                    background-color: var(--color-abdicon);
+                                    padding: .25rem;
+                                    font-size: var(--size-s);
+                                    color: var(--color-abf5);
+                                }
+                            }
+
+                            &>text {
+                                color: var(--color-abf3);
+                            }
+                        }
+
+                        &>view:last-child {
+                            flex: 1;
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
+                            text-align: right;
+                            padding: .5rem 0;
+
+                            &>view {
+                                display: flex;
+                                justify-content: flex-end;
+                                align-items: center;
+                                // width: var(--length-width);
+                                // height: var(--length-height);
+
+                                &>button {
+                                    width: var(--length-width);
+                                    height: var(--length-height);
+                                    padding: 0; //必须加,否则图片无法继承完整宽度
+                                    border-radius: 50%;
+                                    overflow: hidden;
+                                    background-color: var(--color-absbg);
+
+                                    &>image {
+                                        width: var(--length-width);
+                                        height: var(--length-height);
+                                        border-radius: 50%;
+                                    }
+
+                                    &>text {
+                                        font-size: var(--size-icon);
+                                        color: var(--color-abf4);
+                                    }
+                                }
+                            }
+
+                            .picker {
+                                width: 100%;
+                                height: 100%;
+                            }
+
+                            .editValue {
+                                flex: 1;
+                                display: flex;
+                                justify-content: flex-end;
+                                align-items: center;
+                                text-align: right;
+
+                                &>text {
+                                    max-width: 100%;
+
+                                    &.placeholder {
+                                        color: var(--color-abf4);
+                                    }
+                                }
+                            }
+
+                            .arrow {
+                                margin-left: .25rem;
+                                font-size: var(--size-xs);
+                                color: var(--color-abf4);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

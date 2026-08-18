@@ -1,0 +1,6 @@
+<!--components/swiper-back/index.wxml-->
+<!-- <root-portal enable> -->
+  <horizontal-drag-gesture-handler onGestureEvent="onSwipeBack">
+    <view class="gesture-back-area"></view>
+  </horizontal-drag-gesture-handler>
+<!-- </root-portal> -->

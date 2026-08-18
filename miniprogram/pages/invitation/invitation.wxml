@@ -1,0 +1,47 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <tab-bar selected="{{1}}"/>
+  <navigation-bar bind:bindMenu="bindMenu">
+  </navigation-bar>
+  <view class="contain">
+    <view class="scroll">
+      <scroll-view class="invitations" scroll-y show-scrollbar="{{false}}" type="list"
+        scroll-behavior="smooth" scroll-with-animation="true"
+        scroll-into-view="{{into}}" scroll-into-view-alignment="center">
+        <text id="{{'A'+item.id}}" wx:for="{{types}}" wx:key="id" bind:tap="tapMenu" 
+        data-item="{{item}}" data-index="{{index}}"
+        class="{{selectIndex===index?'active':''}}">{{item}}</text>
+        <view class="now">
+          <block wx:if="{{invitations.length}}">
+            <view class="invitation" wx:for="{{invitations}}" wx:key="" wx:for-item="invitation">
+              <text>{{invitation.guestName}}</text>
+              <view>
+                <text class="content">{{invitation.blessing}}</text>
+                <text class="date">{{invitation.date}}</text>
+              </view>
+            </view>
+          </block>
+          <view wx:else>
+            <text>暂无应邀...</text>
+          </view>
+        </view>
+        <!--
+        <view class="sep">
+          <text>历史应邀</text>
+        </view>
+        <view class="history">
+          <view class="invitation" wx:for="{{invitations}}" wx:key="" wx:for-item="invitation">
+            <text>{{invitation.name}}</text>
+            <view>
+              <text class="content">{{invitation.content}}</text>
+              <text class="date">{{invitation.date}}</text>
+            </view>
+          </view>
+        </view>
+        -->
+      </scroll-view>
+    </view>
+    <view class="ad">
+      <image src="http://witknow.net/witInvite/ad2.jpg" mode="aspectFit" lazy-load="{{false}}"/>
+    </view>
+  </view> 
+</page-meta>
