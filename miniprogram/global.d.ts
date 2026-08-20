@@ -24,6 +24,7 @@ declare global {
     interface Date {
         Format: (formatString: string) => string;
         nextDay: (nextDay: number) => Date;
+        lunarDate: (formatString: string) => string;
     }
     interface String {
         toDateString: () => string;
@@ -31,8 +32,7 @@ declare global {
         ltrim: (str: string) => string;
         lappend: (str: string) => string;
         ascLength: () => number;
-        toDate: () => Date;
-        lunarDate: (formatString: string) => string;
+        toDate: () => Date | null;
     }
     //获取对象中非对象的键
     export type BasicKeys<T> = {

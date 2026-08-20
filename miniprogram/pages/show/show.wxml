@@ -1,43 +1,42 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <navigation-bar bind:bindMenu="bindMenu" back>
-  </navigation-bar>
+  <navigation-bar back title="邀请函预览" />
   <view class="contain">
-    <text wx:if="{{invitation.backgroundMusic || template.backgroundMusic}}" class="music iconfont icon-yinle {{play?'play':''}}" 
-        bind:tap="tapPlay"/>
-    <scroll-view scroll-y scrollbar="false" type="list">
-        <share-element key="{{se}}"
-            transition-on-gesture transform="true" shuttle-on-pop="from"
-            class="shareElement" bind:tap="">
-            <image src="{{bg}}" mode="widthFix"  />
-        </share-element>
-    </scroll-view>
-    <view class="footer">
-        <view wx:if="{{template}}">
-            <text bind:tap="tapCreate">制作</text>
-        </view>
-        <view wx:if="{{invitation}}">
-            <text bind:tap="tapReply" class="replay">{{response?'已回复':'回复'}}</text>  
-        </view>
-        <view wx:if="{{invitation}}">
-            <text id="favor" bind:tap="tapFavorite" 
-              style="color:{{favorite?'var(--color-error)':'var(--color-abf2)'}}">{{favorite?'取消收藏':'收藏'}}</text>
-        </view>
+    <view wx:if="{{pageState === 'loading'}}" class="preview-state">
+      <view class="state-seal loading"></view>
+      <text class="song-title">正在准备预览</text>
+      <text>请稍候，正在恢复模板内容…</text>
     </view>
-  </view> 
-  <half-layout id="the-response" back="{{!1}}" bind:close="layoutClose" background="var(--color-absbg)">   
-    <view slot="header" class="edit-header">
-        <view class="card-header">
-            <text class="title">回复</text>
-            <text class="iconfont icon-guanbijiantou close" bind:tap="onCancel" />
+
+    <view wx:elif="{{pageState === 'error'}}" class="preview-state">
+      <text class="state-kicker">PREVIEW</text>
+      <view class="state-seal"><text>候</text></view>
+      <text class="song-title">暂时无法预览</text>
+      <text>{{errorMessage}}</text>
+      <button bind:tap="tapRetry">重新加载</button>
+    </view>
+
+    <view wx:else class="preview-content">
+      <view class="preview-stage">
+        <scroll-view scroll-y show-scrollbar="{{false}}" type="list">
+          <share-element key="{{se}}" transition-on-gesture transform="true"
+            shuttle-on-pop="from" class="shareElement">
+            <image src="{{bg}}" mode="widthFix" />
+          </share-element>
+        </scroll-view>
+      </view>
+
+      <view wx:if="{{template}}" class="action-dock">
+        <view id="favor" class="action secondary {{favorite ? 'is-favorite' : ''}}"
+          bind:tap="tapFavorite" hover-class="action--pressed" aria-role="button"
+          aria-label="{{favorite ? '取消收藏' : '收藏'}}">
+          <text class="action-icon iconfont {{favorite ? 'icon-xihuan' : 'icon-xihuan1'}}"></text>
+          <text>收藏</text>
         </view>
+        <view class="action primary" bind:tap="tapCreate"
+          hover-class="action--pressed" aria-role="button" aria-label="制作">
+          <text>制作</text>
+        </view>
+      </view>
     </view>
-    <view slot="content" class="edit-content">
-        <responseForm id="the-Form" bind:trigger="triggerSubmit" 
-            theInvitation="{{invitation}}" theResponse="{{response}}" />
-    </view>
-    <view slot="footer" class="card-footer">
-      <text class="btn cancel" bind:tap="onCancel">取消</text>
-      <text class="btn submit" bind:tap="onSubmit">提交</text>
-    </view>
-  </half-layout>
+  </view>
 </page-meta>

@@ -1,113 +1,336 @@
 page-meta {
-    display: flex; //不生效，一定要写在内联中或者class中，费解
-    flex-direction: column;
-    flex: 1;
-    width: 100%;
-    overflow: auto;
-    color: var(--color-abf1);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  background-color: var(--paper);
+}
 
-    .contain {
-        flex: 1;
-        position: relative;
-        padding-bottom: calc(env(safe-area-inset-bottom) + var(--length-height));
-        width: calc(100% - 2rem);
-        margin: auto;
-        flex-direction: column;
-        display: flex;
+.page-shell {
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24rpx;
+}
 
-        &>.scroll {
-            flex: 1;
+.summary-panel {
+  height: 128rpx;
+  display: flex;
+  background-color: rgba(251, 248, 241, .8);
+  border: 1px solid var(--hairline);
+}
 
-            &>.invitations {
-                height: 100%;
-                flex: 1 0 0;
+.summary-panel>view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  font-size: 22rpx;
+}
 
-                .sep {
-                    display: flex;
-                    justify-content: center;
-                    align-items: baseline;
-                    height: 2rem;
-                    display: flex;
-                    align-items: center;
+.summary-panel>view.active {
+  background-color: rgba(47, 74, 70, .035);
+}
 
-                    &::after {
-                        content: '';
-                        width: 100%;
-                        border-bottom: solid 1px var(--color-abf1);
-                    }
+.summary-panel>view.active::after {
+  content: '';
+  position: absolute;
+  right: 30rpx;
+  bottom: -1px;
+  left: 30rpx;
+  height: 3rpx;
+  background-color: var(--cinnabar);
+}
 
-                    &>text {
-                        position: absolute;
-                        background-color: var(--color-abbg);
-                        z-index: 1;
-                        padding: 0 .5rem;
-                        // top:-1rem;
-                    }
-                }
+.summary-panel>view+view::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 24rpx;
+  bottom: 24rpx;
+  width: 1px;
+  background-color: var(--hairline);
+}
 
-                .invitation {
-                    // width: 100%;
-                    margin: .5rem 1rem;
-                    height: var(--length-height);
-                    display: flex;
+.summary-number {
+  margin-top: 4rpx;
+  color: var(--ink);
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 42rpx;
+}
 
-                    &>text {
-                        width: calc(var(--length-width) * 1.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        font-size: var(--size-l);
-                        background-color: var(--colorA-abf2);
-                        border-radius: .5rem 0 0 .5rem;
-                    }
+.summary-panel>view:first-child .summary-number {
+  color: var(--cinnabar);
+}
 
-                    &>view {
-                        flex: 1 0 0;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        padding: .5rem;
-                        font-size: var(--size-s);
-                        background-color: var(--colorB-abf2);
-                        border-radius: 0 .5rem .5rem 0;
+.response-scroll {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
 
-                        &>.content {}
+.timeline {
+  padding: 40rpx 0 20rpx;
+}
 
-                        &>.date {
-                            align-self: flex-end;
-                        }
-                    }
-                }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 18rpx;
+  top: 570rpx;
+  bottom: 42rpx;
+  width: 2rpx;
+  background-color: rgba(47, 74, 70, .38);
+}
 
-                .ad {
-                    width: calc(100vw - 2rem);
-                    height: calc((100vw - 2rem) / 1.6);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    font-size: var(--size-icon);
+.timeline-item {
+  margin-bottom: 24rpx;
+}
 
-                    &>image {
-                        width: 100%;
-                        height: 100%;
-                    }
-                }
-            }
-        }
+.featured-item {
+  padding: 0;
+}
 
-        &>.ad {
-            width: 100%;
-            height: calc(100% / 2.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: var(--size-icon);
+.featured-response-card {
+  height: 510rpx;
+  overflow: hidden;
+  background-color: var(--paper-light);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 10rpx 26rpx var(--paper-shadow);
+}
 
-            &>image {
-                width: 100%;
-                height: 100%;
-            }
-        }
+.invitation-courtyard {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .58;
+}
 
-    }
+.invitation-fold {
+  position: absolute;
+  z-index: 3;
+  width: 64rpx;
+  height: 64rpx;
+  opacity: .9;
+}
+
+.fold-top {
+  top: -1px;
+  right: -1px;
+}
+
+.fold-bottom {
+  right: -1px;
+  bottom: 82rpx;
+  transform: rotate(90deg);
+}
+
+.invitation-seal {
+  position: absolute;
+  right: 30rpx;
+  bottom: 112rpx;
+  z-index: 2;
+  width: 46rpx;
+  height: 46rpx;
+  opacity: .9;
+}
+
+.featured-card-content {
+  z-index: 2;
+  padding: 30rpx 34rpx 0;
+}
+
+.latest-label {
+  display: block;
+  color: var(--ink-soft);
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 24rpx;
+}
+
+.featured-date {
+  margin-top: 28rpx;
+  display: block;
+  color: var(--ink);
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 34rpx;
+}
+
+.featured-name {
+  margin-top: 20rpx;
+  display: block;
+  font-size: 43rpx;
+}
+
+.featured-meta {
+  margin-top: 18rpx;
+  display: flex;
+  align-items: center;
+  color: var(--ink-soft);
+  font-size: 24rpx;
+}
+
+.featured-meta .iconfont {
+  width: 38rpx;
+  color: var(--pine);
+  font-size: 25rpx;
+}
+
+.status {
+  padding: 7rpx 16rpx;
+  border-radius: 6rpx;
+  font-size: 20rpx;
+}
+
+.featured-card-content>.status {
+  margin-top: 20rpx;
+  display: inline-flex;
+}
+
+.status.confirmed {
+  color: var(--pine-deep);
+  background-color: var(--celadon);
+}
+
+.status.pending {
+  color: #704d1a;
+  background-color: #f0d9a7;
+}
+
+.status.declined {
+  color: var(--ink-soft);
+  background-color: var(--paper-deep);
+}
+
+.featured-card-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  height: 82rpx;
+  padding: 0 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink-soft);
+  background-color: rgba(251, 248, 241, .9);
+  border-top: 1px solid var(--hairline);
+  font-size: 23rpx;
+}
+
+.compact-item {
+  padding-left: 56rpx;
+}
+
+.compact-response-card {
+  min-height: 142rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.timeline-node {
+  position: absolute;
+  left: -48rpx;
+  top: 60rpx;
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background-color: var(--paper);
+  border: 4rpx solid var(--pine);
+  z-index: 2;
+}
+
+.compact-date {
+  width: 146rpx;
+  flex: none;
+  color: var(--ink);
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 23rpx;
+}
+
+.compact-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-name {
+  font-size: 28rpx;
+}
+
+.compact-address {
+  margin-top: 9rpx;
+  color: var(--ink-soft);
+  font-size: 20rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-response-card>.status {
+  flex: none;
+  margin-left: 14rpx;
+}
+
+.compact-arrow {
+  margin-left: 14rpx;
+  color: var(--ink-soft);
+  font-size: 34rpx;
+}
+
+.empty-state {
+  min-height: 620rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 72rpx 38rpx 0;
+  color: var(--ink-soft);
+  overflow: hidden;
+  background-color: var(--paper);
+}
+
+.empty-courtyard {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 468rpx;
+  opacity: .92;
+}
+
+.empty-copy {
+  z-index: 1;
+  width: 66%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.empty-copy>.song-title {
+  margin-bottom: 14rpx;
+  color: var(--pine);
+  font-size: 38rpx;
+}
+
+.empty-copy>text:last-child {
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.tabbar-spacer {
+  height: calc(92px + env(safe-area-inset-bottom));
 }

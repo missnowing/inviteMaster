@@ -1,16 +1,19 @@
 {
   "name": "miniprogram-ts-sass-quickstart",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.verify.json",
+    "test": "node --test scripts/template-codec.test.cjs",
+    "check:diff": "git diff --check",
+    "verify": "npm run typecheck && npm test && npm run check:diff"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "miniprogram-api-typings": "^2.8.3-1"
+    "miniprogram-api-typings": "^2.8.3-1",
+    "typescript": "^5.9.2"
   },
   "main": "index.js",
-  "description": "",
-  "dependencies": {
-    "we-cropper": "^1.4.0"
-  }
+  "description": ""
 }

@@ -1,6 +1,7 @@
-import { _request } from "../utils/util";
+import { _request, setAuthRefreshHandler } from "../utils/util";
 import Base64 from '../utils/lib/base64';
 import { TUser, TUserInfo, setUser, setUserInfo } from "./userSlice";
+import { UserSession, readUserSession, writeUserSession } from "../utils/session";
 
 export const _Server = "https://witknow.com";
 export const _CDN = "https://cdniwallet.apisesame.com/";
@@ -41,7 +42,7 @@ export const GlobalSlice = {
     },
     setFonts: (payload: TFont[]) => {
       const app = getApp();
-      app.globalData.fonts = payload;
+      app.proxyData.fonts = payload;
     },
   },
 }
@@ -49,46 +50,107 @@ export const {
   setTabbar, setPerlogo, setFonts
 } = GlobalSlice.reducers;
 
-export const wxLogin = (success?: Function) => {
-  wx.login({
-    success: res => {
-      _request({
+type LoginResponse = TUser & {
+  perlogo: string,
+  user: TUserInfo,
+  [key: string]: any,
+};
+
+let activeLogin: Promise<LoginResponse> | null = null;
+
+const applyUserSession = (session: UserSession<TUserInfo>) => {
+  setUser({ token: session.token, openid: session.openid });
+  setPerlogo(session.perlogo);
+  setUserInfo(session.userinfo);
+};
+
+const loginOnce = () => new Promise<WechatMiniprogram.LoginSuccessCallbackResult>((resolve, reject) => {
+  wx.login({ success: resolve, fail: reject });
+}).then((res) =>
+      _request<LoginResponse>({
         url: "/witinvite/user/login",
-        params: { code: res.code, },
+        query: { code: res.code, },
         mask: !0,
-        formData: !0,
-      }).then((r: any) => {
-        console.log("user get!", r);
-        const { token, openid, perlogo }: TUser & { perlogo: string } = { ...r };
-        const userinfo: TUserInfo = r.user;
-        setUser({ token, openid });
-        setPerlogo(perlogo);
-        setUserInfo(userinfo);
-        wx.setStorage({
-          key: "user",
-          data: { token, openid, userinfo, perlogo },
-        });
-        success && success(r);
-      });
-    }, fail(e) {
+        formData: !1,
+        throwCatch: !0,
+        skipAuthRefresh: !0,
+      })
+).then(async (response) => {
+  const { token, openid, perlogo = "", user: userinfo } = response;
+  if (!token || !openid) {
+    throw { status: 401, message: response.message || "登录接口未返回有效凭证" };
+  }
+
+  const session: UserSession<TUserInfo> = { token, openid, perlogo, userinfo: userinfo || {} as TUserInfo };
+  applyUserSession(session);
+  await writeUserSession(session);
+  return response;
+});
+
+const loginWithRetry = (): Promise<LoginResponse> => loginOnce().catch((error) =>
+  new Promise<LoginResponse>((resolve, reject) => {
       wx.showModal({
-        title: `网络异常，请重试`,
-        content: e.errMsg,
+        title: "登录失败",
+        content: error.message || error.errMsg || "网络异常，请重试",
         confirmText: "重试",
-        // showCancel: !1,
         success(res) {
           if (res.confirm) {
-            console.log('用户点击确定');
-            wxLogin(success);
-          } else if (res.cancel) {
-            console.log('用户点击取消')
+            loginWithRetry().then(resolve).catch(reject);
+          } else {
+            reject(error);
           }
-        }
-      })
-      // wx.showToast({ title: `登录失败`, duration: 3000, icon: "error" });
-    }
-  })
+        },
+        fail: reject,
+      });
+    })
+);
+
+export const wxLogin = (success?: (response: LoginResponse) => void) => {
+  if (!activeLogin) {
+    activeLogin = loginWithRetry().finally(() => {
+      activeLogin = null;
+    });
+  }
+
+  return activeLogin.then((response) => {
+    success && success(response);
+    return response;
+  });
 }
+
+export const restoreUserSession = (success?: (session: UserSession<TUserInfo>) => void) =>
+  readUserSession<TUserInfo>().then((session) => {
+    if (!session) {
+      return wxLogin().then((response) => {
+        const restored: UserSession<TUserInfo> = {
+          token: response.token,
+          openid: response.openid,
+          userinfo: response.user || {} as TUserInfo,
+          perlogo: response.perlogo || "",
+        };
+        success && success(restored);
+        return restored;
+      });
+    }
+
+    applyUserSession(session);
+    success && success(session);
+    return session;
+  });
+
+export const persistCurrentUserInfo = (userinfo: TUserInfo) => {
+  const app = getApp();
+  const { token = "", openid = "" } = app.globalData.user || {};
+  const session: UserSession<TUserInfo> = {
+    token,
+    openid,
+    userinfo,
+    perlogo: app.globalData.perlogo || "",
+  };
+  return writeUserSession(session);
+};
+
+setAuthRefreshHandler(() => wxLogin().then(({ token, openid }) => ({ token, openid })));
 
 /**
  * 获取 又拍云 的验证
@@ -135,7 +197,6 @@ export const getSignature = (
   return _request({ server: "https://apisesame.com", url: `/iwallet/base/getSignature`, params: { data, }, loading: !1 })
     .then((r: any) => {
       if (r.result >= 0) {
-        console.log("getSignature", r);
         return Promise.resolve({ ...r, policy });
       } else if (r.status === 98) {
         return Promise.reject(r.message)
@@ -244,15 +305,14 @@ export const selectFonts = () => {
       openid: getApp().globalData.user.openid,
     }
   }).then((r: any) => {
-    console.log(r);
     if (r.result >= 0) {
       setFonts(r.message);
       return Promise.resolve({ list: r.message, perlogo: r.perlogo });
     } else {
       return Promise.reject(r);
     }
-  }).catch(e => {
-    return Promise.reject();
+  }).catch(error => {
+    return Promise.reject(error);
   })
 }
 

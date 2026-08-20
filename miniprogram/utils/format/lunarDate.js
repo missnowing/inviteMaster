@@ -1,7 +1,6 @@
 /*时间相关函数和滚轮选择器*/
 //输入格式（yyMMdd hh:mm）输出日期时间，输入格式（cY年cNcD 生肖cX）输出农历，可与阳历混合使用
 Date.prototype.lunarDate = function (fmt) {
-	console.log(this);
 	var o = { "M+": this.getMonth() + 1, "d+": this.getDate(), "w+": "日一二三四五六".charAt(this.getDay()), "h+": this.getHours(), "m+": this.getMinutes(), "s+": this.getSeconds(), "S": this.getMilliseconds(), "q+": Math.floor((this.getMonth() + 3) / 3) };
 	if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
 	for (var k in o) {
@@ -15,7 +14,7 @@ Date.prototype.lunarDate = function (fmt) {
 			fmt = fmt.replace(RegExp.$1, "甲乙丙丁戊己庚辛壬癸".charAt((date_vi.cYear - 4) % 10) + "子丑寅卯辰巳午未申酉戌亥".charAt((date_vi.cYear - 4) % 12));
 		}
 		if (new RegExp("(cN)").test(fmt)) {
-			fmt = fmt.replace(RegExp.$1, monStrs[date_vi.cMonth - 1]);
+				fmt = fmt.replace(RegExp.$1, date_vi.cMonthName || monStrs[date_vi.cMonth - 1]);
 		}
 		if (new RegExp("(cD)").test(fmt)) {
 			fmt = fmt.replace(RegExp.$1, dayString[date_vi.cDay - 1]);
@@ -64,11 +63,13 @@ function e2c(D) {
 		if (isEnd) break;
 	}
 	date_vi.cYear = 1921 + m; date_vi.cMonth = k - n + 1; date_vi.cDay = total + 1;
+	var monthNames = monStrs.slice();
 	if (k == 12) {
-		var mon = Math.floor(CalendarData[m] / 0x10000);
-		monStrs.splice(mon, 0, "闰" + monStrs[mon - 1])
-	};
-	return date_vi.cYear + "甲乙丙丁戊己庚辛壬癸".charAt((date_vi.cYear - 4) % 10) + "子丑寅卯辰巳午未申酉戌亥".charAt((date_vi.cYear - 4) % 12) + "(" + "鼠牛虎兔龙蛇马羊猴鸡狗猪".charAt((date_vi.cYear - 4) % 12) + ")年 " + monStrs[date_vi.cMonth - 1] + dayString[date_vi.cDay - 1];
+			var mon = Math.floor(CalendarData[m] / 0x10000);
+			monthNames.splice(mon, 0, "闰" + monthNames[mon - 1])
+		};
+	date_vi.cMonthName = monthNames[date_vi.cMonth - 1];
+	return date_vi.cYear + "甲乙丙丁戊己庚辛壬癸".charAt((date_vi.cYear - 4) % 10) + "子丑寅卯辰巳午未申酉戌亥".charAt((date_vi.cYear - 4) % 12) + "(" + "鼠牛虎兔龙蛇马羊猴鸡狗猪".charAt((date_vi.cYear - 4) % 12) + ")年 " + date_vi.cMonthName + dayString[date_vi.cDay - 1];
 }//阳历换算农历，分解每列的值
 function c2e() {
 	var n, k, total = 0;
@@ -153,19 +154,19 @@ function C_scrolli5(k) {
 		cont = "<ul class='FL W11 color1'><li class='W11 H' ></li><li class='W11 H' ></li><li class='W11 H' ></li>";
 	if (ye < 3 && date_show_tp[1] == "农历") {//农历的年月日
 		var cdt = CalendarData[date_vi.cYear - 1921], ln = 196;//某年农历特征值，农历年滚轮行数
-		if (ye == 1) {//设置月滚轮行数=每年月数12（闰月13）
-			ln = cdt < 0xfff ? 12 : 13,
-				monStrs = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "腊月"];
-			if (ln == 13) {
-				var mon = Math.floor(cdt / 0x10000);
-				monStrs.splice(mon, 0, "闰" + monStrs[mon - 1])
-			};
+			if (ye == 1) {//设置月滚轮行数=每年月数12（闰月13）
+				ln = cdt < 0xfff ? 12 : 13;
+				var monthNames = monStrs.slice();
+				if (ln == 13) {
+					var mon = Math.floor(cdt / 0x10000);
+					monthNames.splice(mon, 0, "闰" + monthNames[mon - 1])
+				};
 		} else if (ye == 2) {//日滚轮行数=大小月的天数
 			ln = 29 + GetBit(cdt, (cdt < 0xfff ? 12 : 13) - date_vi.cMonth);
 		}
 		for (i = 0; i < ln; i++) {
 			var j = i + formi[ye]; //console.log(i,j);
-			cont += "<li class='W11 H AC' data-v=" + j + " onclick='turn5()' >" + (ye == 2 ? dayString[j - 1] : (ye == 1 ? monStrs[j - 1] : j + "年")) + "</li>"
+				cont += "<li class='W11 H AC' data-v=" + j + " onclick='turn5()' >" + (ye == 2 ? dayString[j - 1] : (ye == 1 ? monthNames[j - 1] : j + "年")) + "</li>"
 		}
 	}
 	else {

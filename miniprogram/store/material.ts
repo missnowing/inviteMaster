@@ -1,5 +1,4 @@
-import { TOption, _request, reflectEntity } from "../utils/util";
-import { _Server, setPerlogo } from "./global";
+import { _request, reflectEntity } from "../utils/util";
 import { getUserHeader } from "./userSlice";
 
 export type TMaterialCategory = {
@@ -24,10 +23,8 @@ export type TMaterial = {
   url: string,
 };
 export type IMaterial = {
-  [key: string]: {
-    list: TMaterial[],
-    total: number,
-  },
+  [key: string]: any,
+  load?: boolean,
 }
 
 export const MaterialSlice = {
@@ -35,7 +32,7 @@ export const MaterialSlice = {
   initialState: [],
   reducers: {
     toMaterial: ({ message, total }: { message: TMaterial[], total: number }) => {
-      const app = getApp(), materialMap = app.globalData.material;
+      const app = getApp(), materialMap: IMaterial = {};
       message.forEach(material => {
         const category = material.category;
         materialMap[category] = materialMap[category] || { list: [], total };
@@ -52,17 +49,20 @@ export const MaterialSlice = {
       const app = getApp(), category = material.category,
         materialMap = app.proxyData.material as IMaterial,
         { list, total } = materialMap[category] || { list: [], total: 0 },
-        index = list.findIndex((material_) => material_.id === material.id);
+        index = list.findIndex((material_: TMaterial) => material_.id === material.id);
       index >= 0 ? list.splice(index, 1, material) : list.unshift(material);
       materialMap[category] = { list, total }
       app.proxyData.material = { ...materialMap };
     },
     removeMaterial: (material: TMaterial) => {
-      const app = getApp(), { id } = material,
-        materials = app.proxyData.material as TMaterial[],
-        index = materials.findIndex((material_) => material_.id === id);
-      materials.splice(index, 1);
-      app.proxyData.material = [...materials];
+      const app = getApp(), { id, category } = material,
+        materialMap = app.proxyData.material as IMaterial,
+        list = materialMap[category]?.list || [],
+        index = list.findIndex((material_: TMaterial) => material_.id === id);
+      if (index < 0) return;
+      list.splice(index, 1);
+      materialMap[category] = { ...materialMap[category], list: [...list] };
+      app.proxyData.material = { ...materialMap };
     },
   },
 }
@@ -128,7 +128,7 @@ export const createMaterial = (material: TMaterial) =>
 export const selectNaterialInfo = (id: number) =>
   _request({
     url: `/witinvite/material/getInfo`, header: getUserHeader(),
-    params: { id },
+    query: { id },
   }).then((r: any) => {
     console.log(r);
     if (r.result >= 0) {

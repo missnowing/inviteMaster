@@ -1,8 +1,6 @@
 {
     "usingComponents": {
-        "navigation-bar": "/components/navigation-bar",
-        "half-layout": "/components/half-layout/half-layout",
-        "responseForm": "/components/responseForm/responseForm"
+        "navigation-bar": "/components/navigation-bar"
     },
     "disableScroll": true,
     "navigationStyle": "custom",

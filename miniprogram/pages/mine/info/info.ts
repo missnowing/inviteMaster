@@ -1,5 +1,5 @@
-import { _CDN, uploadImage } from "../../../store/global";
-import { TUserInfo, selectUserInfo, updatetUserInfo } from "../../../store/userSlice";
+import { _CDN, persistCurrentUserInfo, restoreUserSession, uploadImage } from "../../../store/global";
+import { TUserInfo, setUserInfo, updatetUserInfo } from "../../../store/userSlice";
 import instance from "../../../utils/instance";
 
 const app = getApp();
@@ -8,16 +8,13 @@ const GenderRange = ["未知", "男", "女"];
 //表单行配置
 type TFormRow = {
     name: string,        //行名称
-    icon: string,        //行图标
     key: keyof TUserInfo,//对应TUserInfo字段
-    type: "image" | "input" | "picker", //行类型
+    type: "input" | "picker", //行类型
     mode?: string,       //picker模式
     range?: string[],    //picker选项
     value?: any,         //picker当前值
     display: string,     //展示值
     placeholder: string, //空值提示
-    sep: string,         //分组圆角样式
-    noArrow?: boolean,   //不显示右箭头
 }
 
 Page({
@@ -27,8 +24,7 @@ Page({
         },
         _CDN: _CDN,
         userInfo: {} as TUserInfo,
-        selectForm: 0,
-        forms: [] as { name: string, list: TFormRow[] }[],
+        forms: [] as { name: string, hint: string, list: TFormRow[] }[],
         //single-edit弹窗配置
         edit: {
             key: "",
@@ -37,52 +33,41 @@ Page({
             popText: "",
         },
     },
-    prevent() {
-        console.log("prevent")
-    },
     onLoad() {
-        wx.getStorage({
-            key: 'user',
-            success: (res) => {
-                const { token, openid, base, perlogo, userinfo } = res.data;
-                this.setData({ userInfo: userinfo });
-                this.buildForms();
-            }
-        })
+        restoreUserSession().then(({ userinfo }) => {
+            this.setData({ userInfo: userinfo });
+            this.buildForms();
+        }).catch(() => wx.showToast({ title: "用户信息加载失败", icon: "none" }));
     },
     //根据userInfo构建表单展示值
     buildForms() {
         const { userInfo } = this.data;
-        const display = (key: keyof TUserInfo) => `${userInfo[key] || ""}`;
+        const display = (key: keyof TUserInfo) => {
+            const value = `${userInfo[key] || ""}`;
+            if (key === "phone" && /^1\d{10}$/.test(value)) {
+                return `${value.slice(0, 3)} **** ${value.slice(-4)}`;
+            }
+            if (key === "birthday" && value) {
+                return value.slice(0, 10);
+            }
+            return value;
+        };
         const lists: TFormRow[][] = [
             [
-                { name: "头像", icon: "iconfont icon-xiangjixiao", key: "avatarUrl", type: "image", display: display("avatarUrl"), placeholder: "点击上传", sep: "", noArrow: !0 },
-                { name: "昵称", icon: "iconfont icon-wode", key: "nickName", type: "input", display: display("nickName"), placeholder: "未填写", sep: "" },
-                { name: "真实姓名", icon: "iconfont icon-renyuan", key: "realName", type: "input", display: display("realName"), placeholder: "未填写", sep: "" },
-                { name: "手机号", icon: "iconfont icon-xiaoxi", key: "phone", type: "input", display: display("phone"), placeholder: "未填写", sep: "" },
+                { name: "昵称", key: "nickName", type: "input", display: display("nickName"), placeholder: "未填写" },
+                { name: "真实姓名", key: "realName", type: "input", display: display("realName"), placeholder: "未填写" },
+                { name: "手机号", key: "phone", type: "input", display: display("phone"), placeholder: "未填写" },
             ],
             [
-                { name: "性别", icon: "iconfont icon-xingbienan1", key: "gender", type: "picker", mode: "selector", range: GenderRange, value: userInfo.gender || 0, display: GenderRange[userInfo.gender] || "未知", placeholder: "请选择", sep: "" },
-                { name: "生日", icon: "iconfont icon-star", key: "birthday", type: "picker", mode: "date", value: userInfo.birthday, display: display("birthday"), placeholder: "请选择", sep: "" },
+                { name: "性别", key: "gender", type: "picker", mode: "selector", range: GenderRange, value: userInfo.gender || 0, display: GenderRange[userInfo.gender] || "未知", placeholder: "请选择" },
+                { name: "生日", key: "birthday", type: "picker", mode: "date", value: display("birthday"), display: display("birthday"), placeholder: "请选择" },
             ],
         ];
-        const forms = lists.map((list, index) => {
-            list[0].sep = "top";
-            list[list.length - 1].sep = "bottom";
-            return { name: index === 0 ? "基本资料" : "更多信息", list };
-        });
+        const forms = [
+            { name: "常用资料", hint: "署名与联系", list: lists[0] },
+            { name: "个人信息", hint: "选填", list: lists[1] },
+        ];
         this.setData({ forms });
-    },
-    tapChangeMenu(e: any) {
-        const { index } = e.currentTarget.dataset || {}
-        this.setData({
-            selectForm: index,
-        })
-    },
-    changeSwiper(e: any) {
-        this.setData({
-            selectForm: e.detail.current,
-        })
     },
     //输入类行 打开编辑弹窗
     onTapEdit(e: any) {
@@ -126,10 +111,9 @@ Page({
                         uploadImage({ tempPath, suffix, dir: "logo" }).then((up: any) => {
                             wx.hideLoading();
                             this.save({ avatarUrl: up.url });
-                        }).catch(e => {
+                        }).catch(() => {
                             wx.hideLoading();
                             instance.showToast({ title: "头像上传失败", icon: "error" });
-                            console.error(e);
                         });
                     },
                     fail() { wx.hideLoading(); },
@@ -151,13 +135,16 @@ Page({
         updatetUserInfo({ ...this.data.userInfo, ...kv }).then((r: any) => {
             const userInfo = r.message || {};
             this.setData({ userInfo });
+            setUserInfo(userInfo);
             this.buildForms();
             instance.showToast({ title: "保存成功" });
             this.selectComponent("#singleEdit").hideLayout();
-            wx.setStorage({ key: 'user', data: JSON.stringify(userInfo) })
+            persistCurrentUserInfo(userInfo).catch(() => {
+                instance.showToast({ title: "本地信息同步失败", icon: "none" });
+            });
         }).catch((e: any) => {
             //失败不关闭弹窗，保留内容可重试
-            instance.showToast({ title: e?.message || "保存失败", icon: "error" });
+            instance.showToast({ title: (e && e.message) || "保存失败", icon: "error" });
         });
     },
 })

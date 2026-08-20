@@ -1,159 +1,153 @@
 import { TInvitation, selectInvitation } from "../../store/invitation";
-import { TFavorite, selectFavorite } from "../../store/favorite";
 import { _CDN } from "../../store/global";
+
 const app = getApp();
+
+const assetUrl = (path = "") => {
+    if (!path) return "";
+    return /^https?:\/\//.test(path) ? path : _CDN + path;
+};
+
 Page({
     data: {
         style: {
             fontsize: app.globalData.style.rem,
         },
-        _CDN: _CDN,
+        _CDN,
         userinfo: app.globalData.userInfo || {},
-        navs: [{
-            name: "发布列表",
-            route: "deploys",
-            index: 0,
+        workFilters: [{ name: "全部", value: "all" }, {
+            name: "已发布", value: "published",
         }, {
-            name: "我的收藏",
-            route: "cates",
-            index: 1,
+            name: "草稿", value: "draft",
         }, {
-            name: "我的素材",
-            route: "resources",
-            index: 2,
+            name: "已结束", value: "ended",
         }],
-
-        selectIndex: 0,
+        workFilter: "all" as "all" | "published" | "draft" | "ended",
         invitations: [] as TInvitation[],
-        favorites: [] as TFavorite[],
+        visibleInvitations: [] as TInvitation[],
+        publishedCount: 0,
+        totalViews: 0,
+        totalShares: 0,
+        totalResponses: 0,
+        loading: false,
+        snapItem: null as TInvitation | null,
     },
-    onShareAppMessage({ from, target, webViewUrl }) {
-        console.log("onShareAppMessage", (this as any)._shareID);
-        console.log(target);
-        const { item: invitation } = target.dataset;
-        console.log(invitation);
+
+    onShareAppMessage({ target }) {
+        const invitation = target && target.dataset ? target.dataset.item as TInvitation : null;
+        if (!invitation || invitation.status === 0) {
+            return {
+                title: "电子邀请函",
+                path: "/pages/index/index",
+            };
+        }
         const promise = new Promise((resolve, reject) => {
             this.setData({ snapItem: invitation }, () => {
                 wx.getImageInfo({
-                    src: _CDN + invitation.coverImage,
-                    success: (res) => {
-                        // wx.nextTick(() => {
-                        console.log(this._shareID);
-                        this.createSelectorQuery()
-                            .select(`#snapshot`)
-                            // .select(`#snapshot-${this._shareID}`)
-                            .node()
-                            .exec(res => {
-                                const node = res[0].node
-                                console.log(res, node);
-                                node.takeSnapshot({
-                                    type: 'arraybuffer',
-                                    format: 'png',
-                                    success: (res) => {
-                                        const localImg = `${wx.env.USER_DATA_PATH}/${new Date().getTime()}.png`
-                                        const fs = wx.getFileSystemManager();
-                                        fs.writeFileSync(localImg, res.data, 'binary')
-                                        // wx.previewImage({
-                                        //     current: localImg, // 当前显示图片的http链接
-                                        //     urls: [localImg] // 需要预览的图片http链接列表
-                                        // })
-                                        console.log(localImg);
+                    src: invitation.coverUrl || assetUrl(invitation.coverImage),
+                    success: () => {
+                        this.createSelectorQuery().select("#snapshot").node().exec((res) => {
+                            const node = res[0] && res[0].node;
+                            if (!node) {
+                                reject(new Error("分享图片节点不可用"));
+                                return;
+                            }
+                            node.takeSnapshot({
+                                type: "arraybuffer",
+                                format: "png",
+                                success: (snapshot: { data: ArrayBuffer }) => {
+                                    const localImg = `${wx.env.USER_DATA_PATH}/${new Date().getTime()}.png`;
+                                    try {
+                                        wx.getFileSystemManager().writeFileSync(localImg, snapshot.data, "binary");
                                         resolve({
                                             title: `Hi，${invitation.title}`,
                                             path: `/pages/receive/receive?code=${invitation.id}`,
                                             imageUrl: localImg,
                                         });
-                                    },
-                                    fail(res) {
-                                        reject(res);
-                                    },
-                                    complete(res) {
+                                    } catch (error) {
+                                        reject(error);
                                     }
-                                })
-                            })
-                        // })
-                    }
-                })
+                                },
+                                fail: reject,
+                            });
+                        });
+                    },
+                    fail: reject,
+                });
             });
-        })
+        });
         return {
             title: `Hi，${invitation.title}`,
             path: `/pages/receive/receive?code=${invitation.id}`,
-            promise
-        }
+            promise,
+        };
     },
-    onShow() {
-        //编辑个人信息返回后刷新
-        this.setData({ userinfo: app.globalData.userInfo || {} })
-    },
-    onLoad() {
-        app.setProxy("invitation", {
-            set: (target: any, key: string, value: any, receiver: any) => {
-                console.log(target, key, value, receiver);
-                this.setData({
-                    invitations:
-                        value.map((invitation: TInvitation) => {
-                            const date_ = `${new Date(invitation.eventDate).Format('yyyy-MM-dd')}(${invitation.lunarDate})`;
-                            return {
-                                ...invitation,
-                                date_
-                            }
-                        })
 
-                })
-            }
-        })
-        app.setProxy("favorite", {
-            set: (target: any, key: string, value: any, receiver: any) => {
-                console.log(target, key, value, receiver);
-                this.setData({
-                    favorites: { ...value }
-                })
-            }
-        })
-        selectInvitation()
-        selectFavorite()
+    onShow() {
+        this.setData({ userinfo: app.globalData.userInfo || {} });
+        this.loadData();
     },
-    tapNav(e: WechatMiniprogram.TouchEvent) {
-        const selectIndex = e.currentTarget.dataset.index;
-        this.setData({ selectIndex })
+
+    loadData() {
+        if (this.data.loading) return;
+        this.setData({ loading: true });
+        selectInvitation({ page: 1, pageSize: 50 }).then((invitationResult) => {
+            const invitations = invitationResult.list.map((invitation: TInvitation) => ({
+                ...invitation,
+                coverUrl: assetUrl(invitation.coverImage),
+                date_: invitation.eventDate
+                    ? `${new Date(invitation.eventDate).Format("yyyy-MM-dd")}${invitation.lunarDate ? `（${invitation.lunarDate}）` : ""}`
+                    : "时间待定",
+            }));
+            this.setData({
+                invitations,
+                visibleInvitations: invitations,
+                publishedCount: invitations.filter((item: TInvitation) => item.status === 1).length,
+                totalViews: invitations.reduce((total: number, item: TInvitation) => total + Number(item.viewCount || 0), 0),
+                totalShares: invitations.reduce((total: number, item: TInvitation) => total + Number(item.shareCount || 0), 0),
+                totalResponses: invitations.reduce((total: number, item: TInvitation) => total + Number(item.responseCount || item.respondCount || 0), 0),
+            });
+            this.applyWorkFilter();
+        }).catch(() => {
+            wx.showToast({ title: "个人内容加载失败，请稍后重试", icon: "none" });
+        }).finally(() => {
+            this.setData({ loading: false });
+        });
     },
+
+    tapWorkFilter(e: WechatMiniprogram.TouchEvent) {
+        this.setData({ workFilter: e.currentTarget.dataset.filter });
+        this.applyWorkFilter();
+    },
+
+    applyWorkFilter() {
+        const filter = this.data.workFilter;
+        const visibleInvitations = this.data.invitations.filter((item: TInvitation) => {
+            if (filter === "published") return item.status === 1;
+            if (filter === "draft") return item.status === 0;
+            if (filter === "ended") return item.status === 2 || item.status === 3;
+            return true;
+        });
+        this.setData({ visibleInvitations });
+    },
+
     tapMore() {
-        wx.navigateTo({
-            url: "./info/info"
-        })
+        wx.navigateTo({ url: "./info/info" });
     },
-    tapShare(e: WechatMiniprogram.TouchEvent) {
-        console.log("tapShare");
-        const { item } = e.currentTarget.dataset;
-        (this as any)._shareID = item.id;
+
+    stopPropagation() {
+        // `catch:tap` only blocks the row's edit action; sharing is handled by WeChat.
     },
+
     tapDetail(e: WechatMiniprogram.TouchEvent) {
-        const { item: invitation } = e.currentTarget.dataset;
+        const invitation = e.currentTarget.dataset.item as TInvitation;
         wx.navigateTo({
-            url: `../show/create/create`,
+            url: `../show/create/create?invitationId=${invitation.id}`,
             routeType: "wx://zoom",
-            events: {
-                dataFromInfo: function ({ data }: any) {
-                },
+            success(res) {
+                res.eventChannel.emit("dataFromMine", { invitation });
             },
-            success: function (res) {
-                res.eventChannel.emit('dataFromMine', { invitation })
-            },
-        })
+        });
     },
-    tapShow(e: WechatMiniprogram.TouchEvent) {
-        const { se, bg, item: invitation } = e.currentTarget.dataset;
-        wx.navigateTo({
-            url: `../show/show?se=${se}&&bg=${bg}`,
-            routeType: "wx://zoom",
-            events: {
-                dataFromInfo: function ({ data }: any) {
-                },
-            },
-            success: function (res) {
-                res.eventChannel.emit('dataFromMine', { invitation })
-            },
-        })
-    },
-})
+
+});

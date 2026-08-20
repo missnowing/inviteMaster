@@ -1,6 +1,4 @@
-import { TOption, _request, reflectEntity } from "../utils/util";
-import { _Server, setPerlogo } from "./global";
-import { TInvitation } from "./invitation";
+import { _request, reflectEntity } from "../utils/util";
 import { getUserHeader } from "./userSlice";
 
 export type TResponse = {
@@ -43,6 +41,7 @@ export const ResponseSlice = {
             const app = getApp(),
                 responses = app.proxyData.response,
                 index = responses.findIndex((Response_: TResponse) => Response_.id === id);
+            if (index < 0) return;
             responses.splice(index, 1);
             app.proxyData.response = [...responses];
         },
@@ -53,19 +52,20 @@ export const {
     setResponse, updateResponse, removeResponse,
 } = ResponseSlice.reducers;
 
-export const queryResponse = () => getApp().response;
+export const queryResponse = () => getApp().globalData.response;
 
 /***
  * 获取我的应邀列表
  */
-export const selectResponse = ({ page, pagesize } = { page: 1, pagesize: 20 }) =>
+export const selectResponse = ({ page, pageSize } = { page: 1, pageSize: 20 }) =>
     _request({
         url: `/witinvite/response/myResponseList`, header: getUserHeader(),
-        params: { page, pagesize }
+        query: { page, pageSize }
     }).then((r: any) => {
         if (r.result >= 0) {
-            setResponse(r.message);
-            return Promise.resolve();
+            const list = Array.isArray(r.message) ? r.message : [];
+            setResponse(list);
+            return Promise.resolve({ list, total: Number(r.total || list.length) });
         } else {
             return Promise.reject(r);
         }
@@ -93,7 +93,7 @@ export const createResponse = (entity: TResponse) =>
 export const checkResponse = (invitationId: number) =>
     _request({
         url: `/witinvite/response/check`, header: getUserHeader(),
-        params: { invitationId },
+        query: { invitationId },
     }).then((r: any) => {
         if (r.result >= 0) {
             return Promise.resolve(r.message);

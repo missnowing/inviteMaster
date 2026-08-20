@@ -1,14 +1,27 @@
 <view class="navigation-bar">
   <view class="navigation-bar__inner {{ios ? 'ios' : 'android'}}" style="height:{{statusBarHeight + 48}}px;padding-top: {{statusBarHeight}}px; color: {{color}};background: {{background}}">
     <!--<view class='navigation-bar__left' style="width: {{sideWidth}}px;">-->
-    <view wx:if="{{title}}" class="navigation-bar_title" style="top:{{statusBarHeight}};left:0;">{{title}}</view>
+    <view wx:if="{{title}}"
+      class="navigation-bar_title {{titleAlign === 'left' ? 'left' : ''}}"
+      style="top:{{statusBarHeight}}px;--nav-side-width:{{sideWidth}}px;">{{title}}</view>
     <view class='navigation-bar__left' style="height:{{rect.height}}px;margin-top:{{rect.top-statusBarHeight}}px">
       <block wx:if="{{back}}">
-        <view class="navigation-bar__buttons" bindtap="back" 
+        <view class="navigation-bar__buttons"
           style="width:{{sideWidth}}px;height:100%;display: flex;align-items: center;">
-          <!-- <image class="navigation-bar__button navigation-bar__btn_goback" hover-class="active" src="../../images/back-arrow.png"></image> -->
-          <text class="iconfont icon-zuojiantou" 
-            style="font-size:var(--size-l);font-weight:bold;"/>
+          <view
+            class="navigation-bar__btn_goback_wrapper"
+            bindtap="back"
+            hover-class="navigation-bar__active"
+            hover-stay-time="100"
+            aria-role="button"
+            aria-label="返回"
+          >
+            <image
+              class="navigation-bar__button navigation-bar__btn_goback"
+              src="/assets/img/weui-back-outlined.png"
+              mode="aspectFit"
+            ></image>
+          </view>
         </view>
       </block>
       <block wx:elif="{{leftPart}}">

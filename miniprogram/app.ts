@@ -34,11 +34,13 @@ App({
     menu: {},
     showTabBar: !0,
     perlogo: "",
+    fonts: [],
 
     user: {},
     userInfo: {},
     template: { infos: [] },  //模板 {模板分类id:[]...}
     templateInfo: [],
+    templateStyle: [],
     invitation: [],
     category: [],   //模板分类
     favorite: [],   //请柬收藏
@@ -47,6 +49,7 @@ App({
     response: [],   //应邀
   },
   bindProxy() {
+    const app = this as any;
     /** proxyMap 示例
      * {
      *  [model1]:[
@@ -62,34 +65,38 @@ App({
      * ...
      * }
      */
-    const proxyMap = new Map();
-    const handler = {
+    const proxyMap = new Map<PropertyKey, Set<any>>();
+    const handler: ProxyHandler<Record<string, any>> = {
       get(target, key, receiver) {
         // console.log(`proxyData-get:${key}`, { target, key, receiver });
-        proxyMap.get(key)?.map(obj => {
+        proxyMap.get(key)?.forEach(obj => {
           obj.get?.(target, key, receiver);
         })
         return Reflect.get(target, key, receiver);
       },
       set(target, key, value, receiver) {
-        console.log(`proxyData-set:${key}`, { target, key, value, receiver });
-        proxyMap.get(key)?.map(obj => {
+        const result = Reflect.set(target, key, value, receiver);
+        proxyMap.get(key)?.forEach(obj => {
           obj.set?.(target, key, value, receiver);
         })
-        return Reflect.set(target, key, value, receiver);
+        return result;
       }
     }
-    this.proxyData = new Proxy(this.globalData, handler);
-    this.setProxy = (key, { get, set }) => {
-      const arr = proxyMap.get(key) || [];
-      proxyMap.set(key, [...arr].concat({ get, set }));
+    app.proxyData = new Proxy(this.globalData, handler);
+    app.setProxy = (key: PropertyKey, { get, set }: IProxyObserver) => {
+      const observers = proxyMap.get(key) || new Set();
+      const observer = { get, set };
+      observers.add(observer);
+      proxyMap.set(key, observers);
+      return () => {
+        observers.delete(observer);
+        if (observers.size === 0) proxyMap.delete(key);
+      };
     }
   },
   onShow() {
-    console.log("onShow", getApp());
   },
   onThemeChange({ theme }) {
-    console.log("themeChange", { theme });
     const app = getApp();
     app.proxyData.system.theme = theme;
   },
@@ -103,11 +110,6 @@ App({
 
     //   }, fail() {
     const updateManager = wx.getUpdateManager();
-    updateManager.onCheckForUpdate((res) => {
-      if (res.hasUpdate) {
-        console.log("检测到新版本");
-      }
-    });
     updateManager.onUpdateReady(() => {
       wx.showModal({
         title: "更新提示",
@@ -119,12 +121,8 @@ App({
         },
       });
     });
-    updateManager.onUpdateFailed(() => {
-      console.log("新版本下载失败");
-    });
-
-    wx.getSkylineInfo({
-      success(r) {
+    (wx as any).getSkylineInfo({
+      success(r: { version: string }) {
         if (+r.version.split(".").join("") < 142)
           wx.showModal({
             content: `您当前的版本${r.version}过低，部分功能可能无法正常使用，建议将您的微信更新至最新版本以获得更好的体验！`,
@@ -137,17 +135,16 @@ App({
     })
     //   }
     // })
-    wx.hideTabBar({});
     // const logs = wx.getStorageSync('logs') || []
     // logs.unshift(Date.now())
     // wx.setStorageSync('logs', logs)
     this.globalData.system = wx.getSystemInfoSync();
     format();
-    const appBaseInfo = wx.getAppBaseInfo()
+    const appBaseInfo = (wx as any).getAppBaseInfo() as { fontSizeSetting: number }
     // console.log(appBaseInfo.fontSizeScaleFactor)
     // console.log(appBaseInfo.fontSizeSetting)
     this.bindProxy();
-    this.proxyData.style = { ...this.globalData.style, rem: `${appBaseInfo.fontSizeSetting}px` };
+    (this as any).proxyData.style = { ...this.globalData.style, rem: `${appBaseInfo.fontSizeSetting}px` };
     // this.globalData.style.rem = `${appBaseInfo.fontSizeSetting * 2}px`;
   },
 })

@@ -1,0 +1,37 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true
+  },
+  "include": [
+    "miniprogram/app.ts",
+    "miniprogram/global.d.ts",
+    "miniprogram/utils/session.ts",
+    "miniprogram/utils/util.ts",
+    "miniprogram/utils/wxapp/clean.ts",
+    "miniprogram/store/global.ts",
+    "miniprogram/store/favorite.ts",
+    "miniprogram/store/response.ts",
+    "miniprogram/store/invitation.ts",
+    "miniprogram/store/material.ts",
+    "miniprogram/store/template.ts",
+    "miniprogram/store/templateFavorite.ts",
+    "miniprogram/store/userSlice.ts",
+    "miniprogram/pages/index/index.ts",
+    "miniprogram/pages/receive/receive.ts",
+    "miniprogram/pages/mine/mine.ts",
+    "miniprogram/pages/mine/info/info.ts",
+    "miniprogram/pages/mine/favorites/favorites.ts",
+    "miniprogram/pages/mine/materials/materials.ts",
+    "miniprogram/pages/invitation/invitation.ts",
+    "miniprogram/pages/show/show.ts",
+    "miniprogram/pages/show/create/create.ts",
+    "miniprogram/pages/show/create/templateCodec.ts",
+    "miniprogram/components/responseForm/responseForm.ts",
+    "miniprogram/components/material/material.ts",
+    "miniprogram/components/material/audioCut/audioCut.ts",
+    "typings/index.d.ts"
+  ]
+}

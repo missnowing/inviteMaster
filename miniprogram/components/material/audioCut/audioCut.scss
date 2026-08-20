@@ -1,6 +1,6 @@
 .audio-cut-container {
-    background: var(--color-absbg);
-    border-radius: 2rem;
+    background: var(--paper-light);
+    border-radius: 24rpx 24rpx 0 0;
     margin: 1rem;
     flex: 1;
     padding: 32rpx;
@@ -9,9 +9,9 @@
 
 /* 上传区域 */
 .upload-area {
-    background: #f8fafd;
-    border: 2rpx dashed #cbd5e1;
-    border-radius: 24rpx;
+    background: var(--paper);
+    border: 2rpx dashed var(--hairline);
+    border-radius: 4rpx;
     padding: 48rpx 32rpx;
     text-align: center;
     display: flex;
@@ -24,22 +24,22 @@
 
     .iconfont {
         font-size: 64rpx;
-        color: #3b82f6;
+        color: var(--cinnabar);
     }
 }
 
 .upload-tip {
     font-size: 24rpx;
-    color: #94a3b8;
+    color: var(--ink-soft);
     margin-bottom: 24rpx;
 }
 
 .upload-btn {
-    background: #3b82f6;
-    color: #fff;
+    background: var(--pine);
+    color: var(--paper-light);
     border: none;
     padding: 16rpx 40rpx;
-    border-radius: 40rpx;
+    border-radius: 4rpx;
     font-size: 28rpx;
     font-weight: 500;
 }
@@ -61,7 +61,7 @@
 .file-name {
     font-size: 28rpx;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -70,15 +70,15 @@
 
 .file-duration {
     font-size: 24rpx;
-    color: #94a3b8;
+    color: var(--ink-soft);
     margin-left: 16rpx;
     flex-shrink: 0;
 }
 
 /* 波形图 */
 .waveform-container {
-    background: #1e293b;
-    border-radius: 20rpx;
+    background: var(--pine-deep);
+    border-radius: 4rpx;
     padding: 20rpx 12rpx;
     margin-bottom: 24rpx;
 }
@@ -88,13 +88,13 @@
     height: 200rpx;
     display: block;
     border-radius: 12rpx;
-    background: #0f172a;
+    background: var(--ink);
 }
 
 /* 滑块 */
 .slider-group {
-    background: #f1f5f9;
-    border-radius: 20rpx;
+    background: var(--paper);
+    border-radius: 4rpx;
     padding: 24rpx;
     margin-bottom: 16rpx;
 }
@@ -113,12 +113,12 @@
     align-items: center;
     margin-bottom: 8rpx;
     font-size: 26rpx;
-    color: #475569;
+    color: var(--ink-soft);
 }
 
 .time-value {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--ink);
     font-size: 28rpx;
 }
 
@@ -127,18 +127,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #fff;
+    background: var(--paper-light);
     padding: 16rpx 24rpx;
-    border-radius: 16rpx;
+    border-radius: 4rpx;
     margin-bottom: 24rpx;
-    border: 1rpx solid #e2e8f0;
+    border: 1rpx solid var(--hairline);
     font-size: 26rpx;
-    color: #475569;
+    color: var(--ink-soft);
 }
 
 .segment-len {
     font-weight: 700;
-    color: #1e293b;
+    color: var(--ink);
 }
 
 .segment-badge {
@@ -147,13 +147,13 @@
     font-size: 22rpx;
 
     &.ok {
-        background: #dcfce7;
-        color: #16a34a;
+        background: var(--celadon);
+        color: var(--pine-deep);
     }
 
     &.warn {
-        background: #fef3c7;
-        color: #d97706;
+        background: #f0d9a7;
+        color: #704d1a;
     }
 }
 
@@ -172,7 +172,7 @@
     flex: 1;
     border: none;
     padding: 20rpx 16rpx;
-    border-radius: 40rpx;
+    border-radius: 4rpx;
     font-size: 26rpx;
     font-weight: 600;
     text-align: center;
@@ -187,46 +187,46 @@
 }
 
 .btn-primary {
-    background: #3b82f6;
-    color: #fff;
+    background: var(--pine);
+    color: var(--paper-light);
 }
 
 .btn-secondary {
-    background: #64748b;
-    color: #fff;
+    background: var(--ink-soft);
+    color: var(--paper-light);
 }
 
 .btn-reset {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
 }
 
 .btn-confirm {
-    background: #10b981;
-    color: #fff;
+    background: var(--cinnabar);
+    color: var(--paper-light);
 }
 
 .btn-cancel {
-    background: #e2e8f0;
-    color: #64748b;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
 }
 
 /* 提示 */
 .info-tip {
     font-size: 22rpx;
-    color: #94a3b8;
+    color: var(--ink-soft);
     text-align: center;
     padding-top: 16rpx;
-    border-top: 1rpx solid #e2e8f0;
+    border-top: 1rpx solid var(--hairline);
     margin-top: 8rpx;
 }
 
 /* 错误消息 */
 .error-msg {
-    color: #dc2626;
-    background: #fee2e2;
+    color: var(--cinnabar);
+    background: #f4ddd8;
     padding: 16rpx 24rpx;
-    border-radius: 16rpx;
+    border-radius: 4rpx;
     margin-top: 16rpx;
     font-size: 26rpx;
     text-align: center;

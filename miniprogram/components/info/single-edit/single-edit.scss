@@ -1,86 +1,79 @@
 .single-edit {
-    display: flex;
-    width: 100%;
-    margin: 1rem;
-    border-radius: 1rem;
-    min-height: calc(var(--length-height) * 2);
-    max-height: 70vh;
-    flex-direction: column;
-    box-shadow: 0px 8px 24px var(--color-shadow);
-    background-color: var(--color-abbg);
-    padding: 0 1rem;
-    border-radius: 1rem;
+  width: calc(100% - 48rpx);
+  min-height: 360rpx;
+  max-height: 70vh;
+  margin: 24rpx;
+  padding: 0 28rpx;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background-color: var(--paper-light);
+  border: 1px solid var(--hairline);
+  border-radius: 14rpx;
+  box-shadow: 0 18rpx 52rpx rgba(41, 42, 37, .18);
+}
 
-    .section_image {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 1rem;
+.section_image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 28rpx;
+}
 
-        &>view {
-            width: calc(var(--length-width)*2);
-            height: calc(var(--length-height)*2);
-            display: flex;
+.section_image>view,
+.section_image>view>image,
+.section_image>view>view {
+  width: 160rpx;
+  height: 160rpx;
+}
 
-            &>image {
-                width: 100%;
-                height: 100%;
-                // border-radius: 50%;
-            }
-        }
+.section_image>view>view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--pine);
+}
 
-        &>text {
-            font-size: var(--size-s);
-            margin: .5rem;
-        }
+.section_image>text {
+  margin-top: 12rpx;
+  color: var(--ink-soft);
+  font-size: 22rpx;
+}
 
-        &>view>view {
-            width: calc(var(--length-width)*2);
-            height: calc(var(--length-height)*2);
-            border: dotted 1px var(--color-abicon);
-            // border-radius: 50%;
-            display: flex;
-            overflow: hidden;
+.header {
+  padding: 30rpx 0 22rpx;
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 32rpx;
+  font-weight: 600;
+}
 
-            &>text {
-                font-size: var(--size-abf5);
-                margin: auto;
-            }
-        }
-    }
+.section textarea {
+  width: 100%;
+  min-height: 220rpx;
+  max-height: 320rpx;
+  padding: 20rpx;
+  color: var(--ink);
+  background-color: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 8rpx;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
 
-    .header {
-        padding: 1rem 0;
+.footer {
+  min-height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 38rpx;
+}
 
-        &>text {
-            padding: 0 1rem;
-        }
-    }
+.footer>view {
+  color: var(--ink-soft);
+  font-size: 24rpx;
+}
 
-    .section {
-        &>textarea {
-            width: 100%;
-            flex: 1;
-            border-radius: 1rem;
-            padding: .5rem 1rem;
-            max-height: 12rem;
-            min-height: 8rem;
-            line-height: 1.5;
-            overflow: auto;
-            font-size: var(--size-n);
-            background-color: var(--color-tabbg);
-        }
-    }
-
-    .footer {
-        display: flex;
-        margin: 1rem 0;
-        justify-content: flex-end;
-        align-items: center;
-
-        &>view {
-            margin: 0 1rem 0 .5rem;
-            color: var(--color-abf2);
-        }
-    }
+.footer>view:last-child {
+  color: var(--cinnabar);
+  font-weight: 600;
 }

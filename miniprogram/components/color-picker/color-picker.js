@@ -8,6 +8,13 @@ Component({
     colorData: {
       type: Object,
       value: {}
+    },
+    value: {
+      type: String,
+      value: '#000000',
+      observer(value) {
+        if (this._colorPickerAttached) this._setColorValue(value)
+      }
     }
   },
   data: {
@@ -36,12 +43,16 @@ Component({
   },
   lifetimes: {
     attached() {
-      this._changeColor(this.data.pickerData.x, this.data.pickerData.y)
+      this._colorPickerAttached = true
+      this._setColorValue(this.data.value)
       // this.setData({
       //   hueData: this.data.colorData.hueData,
       //   pickerData: this.data.colorData.pickerData,
       //   barY: this.data.colorData.barY
       // })
+    },
+    detached() {
+      this._colorPickerAttached = false
     },
     ready() {
       const query = this.createSelectorQuery();
@@ -59,6 +70,51 @@ Component({
     }
   },
   methods: {
+    _setColorValue(value) {
+      const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value || '')
+      if (!match) return
+      const raw = match[1].length === 3
+        ? match[1].split('').map(char => char + char).join('')
+        : match[1]
+      const red = parseInt(raw.slice(0, 2), 16)
+      const green = parseInt(raw.slice(2, 4), 16)
+      const blue = parseInt(raw.slice(4, 6), 16)
+      const max = Math.max(red, green, blue)
+      const min = Math.min(red, green, blue)
+      const delta = max - min
+      let hue = 0
+      if (delta) {
+        if (max === red) hue = 60 * (((green - blue) / delta) % 6)
+        else if (max === green) hue = 60 * ((blue - red) / delta + 2)
+        else hue = 60 * ((red - green) / delta + 4)
+      }
+      if (hue < 0) hue += 360
+      const saturation = max ? delta / max : 0
+      const brightness = max / 255
+      const huePosition = hue / 360 * 245
+      this.setData({
+        hueData: this._hueColor(hue),
+        pickerData: {
+          x: saturation * 240,
+          y: (1 - brightness) * 240,
+          red,
+          green,
+          blue,
+          hex: `#${raw.toLowerCase()}`
+        },
+        barY: huePosition
+      })
+    },
+    _hueColor(hue) {
+      const section = hue / 60
+      const cross = Math.round(255 * (1 - Math.abs(section % 2 - 1)))
+      if (section < 1) return { colorStopRed: 255, colorStopGreen: cross, colorStopBlue: 0 }
+      if (section < 2) return { colorStopRed: cross, colorStopGreen: 255, colorStopBlue: 0 }
+      if (section < 3) return { colorStopRed: 0, colorStopGreen: 255, colorStopBlue: cross }
+      if (section < 4) return { colorStopRed: 0, colorStopGreen: cross, colorStopBlue: 255 }
+      if (section < 5) return { colorStopRed: cross, colorStopGreen: 0, colorStopBlue: 255 }
+      return { colorStopRed: 255, colorStopGreen: 0, colorStopBlue: cross }
+    },
     //选中颜色
     _chooseColor(e) {
       clearTimeout(this.data.timer)

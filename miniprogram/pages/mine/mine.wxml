@@ -1,79 +1,91 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <tab-bar selected="{{2}}"/>
-  <navigation-bar bind:bindMenu="bindMenu">
-  </navigation-bar>
-  <view class="contain">
-    <view class="header" bind:tap="tapMore">
+  <tab-bar selected="{{2}}" />
+  <navigation-bar title="创作中心" title-align="left"></navigation-bar>
+  <image class="paper-texture" src="/assets/illustrations/paper-xuan.webp" mode="scaleToFill" />
+  <view class="page-shell">
+    <view class="profile-row" bind:tap="tapMore">
       <view class="portrait">
-        <image wx:if="{{userinfo.avatarUrl}}" src="{{_CDN + userinfo.avatarUrl}}" />
+        <image wx:if="{{userinfo.avatarUrl}}" src="{{_CDN + userinfo.avatarUrl}}" mode="aspectFill" />
         <text wx:else class="iconfont icon-wode" />
       </view>
-      <view class="info">
-        <text>{{userinfo.nickName || userinfo.realName || '取个名字吧'}}</text>
-        <view>
-        </view>
+      <view class="profile-copy">
+        <text class="song-title">{{userinfo.nickName || userinfo.realName || '取个名字吧'}}</text>
+        <text>让每一次相聚，都有一份郑重</text>
       </view>
-      <text class="more icon-a-youjiantou_huaban1" />
+      <text class="edit-profile">编辑资料</text>
     </view>
+
+    <view class="stats-band">
+      <view><text>作品</text><text>{{invitations.length}}</text></view>
+      <view><text>浏览</text><text>{{totalViews}}</text></view>
+      <view><text>分享</text><text>{{totalShares}}</text></view>
+      <view><text>应邀</text><text>{{totalResponses}}</text></view>
+    </view>
+
+    <navigator class="create-banner" url="/pages/index/index" open-type="switchTab">
+      <image class="decorative-image create-bamboo" src="/assets/illustrations/bamboo-sprig.png" mode="aspectFit" />
+      <image class="decorative-image create-fold" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+      <text class="song-title create-title">新建邀请函</text>
+      <text class="create-plus">＋</text>
+    </navigator>
+
+    <view class="quick-entry-grid">
+      <navigator class="quick-entry" url="/pages/mine/favorites/favorites" hover-class="quick-entry--pressed">
+        <text class="iconfont icon-shoucang"></text><text class="song-title">收藏夹</text>
+        <image class="decorative-image quick-fold" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+      </navigator>
+      <navigator class="quick-entry" url="/pages/mine/materials/materials" hover-class="quick-entry--pressed">
+        <text class="iconfont icon-xiangjixiao"></text><text class="song-title">素材库</text>
+        <image class="decorative-image quick-fold" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+      </navigator>
+    </view>
+
     <snapshot id="snapshot">
-      <image mode="aspectFit" src="{{_CDN + snapItem.coverImage}}" />
+      <image mode="aspectFit" src="{{snapItem.coverUrl}}" />
     </snapshot>
+
     <view class="body">
+      <view class="works-heading"><text class="song-title">我的作品</text></view>
       <view class="menu">
-        <text wx:for="{{navs}}" wx:for-item="nav" wx:key="name"
-          class="{{selectIndex === index ? 'active':''}}"
-          bind:tap="tapNav" data-index="{{index}}">{{nav.name}}</text>
+        <text wx:for="{{workFilters}}" wx:key="value"
+          class="{{workFilter === item.value ? 'active':''}}"
+          bind:tap="tapWorkFilter" data-filter="{{item.value}}">{{item.name}}</text>
       </view>
       <view class="list">
-        <view class="deploys {{selectIndex === 0 ? 'active':''}}">
-            <scroll-view scroll-y show-scrollbar="{{false}}" type="list"
-                scroll-behavior="smooth" scroll-with-animation="true"
-                scroll-into-view="{{into}}" scroll-into-view-alignment="center">
-                <view class="deploy" wx:for="{{invitations}}" 
-                 data-item="{{item}}" bind:tap="tapDetail">
-                    <view class="top">
-                        <view class="left">
-                            <text class="cate">{{item.eventType}}</text>
-                            <text class="iconfont icon-renyuan" /> 0/40
-                        </view>
-                        <view class="right">
-                            <view class="share" catch:tap="tapShare" data-item="{{item}}">
-                                <button open-type="share" plain size="mini" data-item="{{item}}">
-                                    <text class="iconfont icon-fenxiang" />
-                                </button>
-                            </view>
-                        </view>
-                    </view>
-                    <text class="date">{{item.date_}}</text>
-                    <text class="_ellipsis content">{{item.title}}</text>
+        <view class="deploys active">
+          <scroll-view scroll-y show-scrollbar="{{false}}" type="list">
+            <view class="work-row" wx:for="{{visibleInvitations}}" wx:key="id"
+              data-item="{{item}}" bind:tap="tapDetail">
+              <image class="work-cover" src="{{item.coverUrl}}" mode="aspectFill" />
+              <view class="work-content">
+                <view class="work-title-line">
+                  <text class="song-title">{{item.title || item.eventName || '未命名邀请函'}}</text>
+                  <text wx:if="{{item.status === 0}}" class="work-status draft">草稿</text>
+                  <text wx:elif="{{item.status === 2}}" class="work-status ended">已结束</text>
+                  <text wx:else class="work-status published">已发布</text>
                 </view>
-                <!--
-                <view class="sep">
-                    <text>历史发布</text>
+                <text class="work-date">{{item.date_}}</text>
+                <text class="work-meta">浏览 {{item.viewCount || 0}} · 分享 {{item.shareCount || 0}}</text>
+                <view class="work-actions">
+                  <text>继续编辑</text>
+                  <button wx:if="{{item.status !== 0}}" open-type="share" plain size="mini"
+                    data-item="{{item}}" catch:tap="stopPropagation">分享</button>
                 </view>
-                -->
-            </scroll-view>
-        </view>
-        <view class="cates {{selectIndex === 1 ? 'active':''}}">
-          <scroll-view scroll-y show-scrollbar="{{false}}" type="list"
-              scroll-behavior="smooth" scroll-with-animation="true"
-              scroll-into-view="{{into}}" scroll-into-view-alignment="center">
-              <view class="scrollContain">
-                  <share-element wx:for="{{favorites}}" class="cate" transition-on-gesture
-                      wx:for-item="invitation" key="se-{{invitation.id}}" transform 
-                      data-se="se-{{invitation.id}}" data-bg="{{_CDN + invitation.coverImage}}" 
-                      data-item="{{invitation}}" 
-                      bind:tap="tapShow">
-                    <image src="{{_CDN + invitation.coverImage}}" mode="aspectFill" lazy-load="{{false}}"  />
-                  </share-element>
-                  <view wx:if="{{favorites%2!==0}}" class="cate"></view>
               </view>
+            </view>
+            <view wx:if="{{!visibleInvitations.length}}" class="empty-state works-empty-state">
+              <image class="decorative-image works-empty-illustration"
+                src="/assets/illustrations/empty-works.jpg" mode="aspectFill" />
+              <view class="works-empty-copy">
+                <text class="song-title">尚无作品</text>
+                <text>从一份合适的模板开始，郑重写下相聚</text>
+                <navigator class="empty-action" url="/pages/index/index" open-type="switchTab">挑选模板</navigator>
+              </view>
+            </view>
+            <view class="tabbar-spacer"></view>
           </scroll-view>
-        </view>
-        <view class="materials {{selectIndex === 2 ? 'active':''}}">
-          <material />
         </view>
       </view>
     </view>
-  </view> 
+  </view>
 </page-meta>

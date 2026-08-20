@@ -1,55 +1,86 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <tab-bar selected="{{0}}"/>
+  <tab-bar selected="{{0}}" />
   <privacy-popup bind:agree="agree" bind:disagree="disagree"></privacy-popup>
-  <navigation-bar bind:bindMenu="bindMenu">
-    <view slot="center" class="center" bind:tap="tapSearch">
-      <text class="iwallet1 iwallet1-search navIcon" />
-      <input type="text" placeholder="请输入关键字" class="navInput " 
-        maxlength="20" placeholder-style=""
-        catch:focus="tapSearch" bind:blur="" bindconfirm=""
-        confirm-type="search" disabled />
-      <text class="navbtn">搜索</text>
-        <!--<text class="iwallet1 iwallet1-deepseek navAI" catch:tap="tapSearchAI" />-->
+  <navigation-bar title="邀请有期，雅意相逢" title-align="left"></navigation-bar>
+  <image class="paper-texture" src="/assets/illustrations/paper-xuan.webp" mode="scaleToFill" />
+
+  <view class="page-shell">
+    <view class="search-box">
+      <text class="iwallet1 iwallet1-search search-icon" />
+      <input type="text" placeholder="搜索场景或模板" maxlength="30"
+        value="{{inputKeyword}}" bind:input="inputSearch" bind:confirm="confirmSearch"
+        confirm-type="search" placeholder-style="color: #929287;" />
+      <text wx:if="{{inputKeyword}}" class="clear-search" bind:tap="clearSearch">清除</text>
     </view>
-  </navigation-bar>
-  <view class="contain">
-    <scroll-view class="header" scroll-x show-scrollbar="{{false}}" type="list"
-      scroll-behavior="smooth" scroll-with-animation="true"
-      scroll-into-view="{{into}}" scroll-into-view-alignment="center">
-      <text id="{{'A'+item.id}}" wx:for="{{types}}" wx:key="id" bind:tap="tapMenu" 
-      data-item="{{item}}" data-index="{{index}}"
-      class="{{selectIndex===index?'active':''}}">{{item.name}}</text>
-    </scroll-view>
-    <view class="swiper">
-      <swiper current="{{selectIndex}}" bind:change="tabChanged" 
-        worklet:onscrollstart="onTabTransition" 
-        worklet:onscrollupdate="onTabTransition" 
-        worklet:onscrollend="onTabTransitionEnd" 
-        duration="{{400}}" cache-extent="1">
-        <swiper-item class="swiperItem" wx:for="{{types}}" wx:key="id" wx:for-item="type">
-          <scroll-view class="scroll" scroll-y scrollbar="false" type="list"> 
-            <view class="swiperList">
-              <share-element wx:for="{{templates[selectCategory].list}}" class="template" transition-on-gesture
-                  wx:for-item="template" key="se-{{template.id}}" transform 
-                  data-se="se-{{template.id}}" data-bg="{{template.thumbnail}}" data-item="{{template}}" 
-                  bind:tap="tapSelect">
-                <image src="{{template.thumbnail}}" mode="aspectFit" 
-                  lazy-load="{{false}}"  />
-              </share-element>
-            <!--
-              <view wx:for="{{wallpapers.list[type.id].list}}" class="wallPaper" wx:for-item="paper">
-                  <image src="{{wallpapers.perlogo + (paper.img||paper.bg) + '!/format/webp/fw/750'}}" mode="aspectFill" 
-                  lazy-load="{{false}}" bind:tap="tapSelect" data-item="{{paper}}" />
+
+    <view class="category-row">
+      <scroll-view class="category-strip" scroll-x enable-flex show-scrollbar="{{false}}">
+        <text bind:tap="tapMenu" data-id="0"
+          class="{{selectedParentCategoryId === 0 ? 'active' : ''}}">全部</text>
+        <text wx:for="{{types}}" wx:key="id" bind:tap="tapMenu" data-id="{{item.id}}"
+          class="{{selectedParentCategoryId === item.id ? 'active' : ''}}">{{item.name}}</text>
+      </scroll-view>
+    </view>
+
+    <scroll-view class="template-scroll" scroll-y show-scrollbar="{{false}}"
+      lower-threshold="180" bind:scrolltolower="loadMore">
+      <view wx:if="{{templates.length}}" class="template-content">
+        <view class="featured-template" data-item="{{templates[0]}}" bind:tap="tapSelect">
+          <image class="decorative-image featured-fold" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+          <view class="featured-cover">
+            <image src="{{templates[0].thumbnail}}" mode="aspectFill" />
+            <image class="decorative-image featured-lattice" src="/assets/illustrations/lattice-window.png" mode="aspectFit" />
+            <image class="decorative-image featured-mountains" src="/assets/illustrations/ink-mountains.png" mode="scaleToFill" />
+            <image class="decorative-image featured-railing" src="/assets/illustrations/railing.png" mode="scaleToFill" />
+          </view>
+          <view class="featured-copy">
+            <text class="featured-eyebrow">{{keyword ? '搜索精选' : '今日精选'}}</text>
+            <text class="song-title featured-title">{{templates[0].name}}</text>
+            <text class="featured-description">{{templates[0].description || '雅致相邀，心意可见'}}</text>
+            <text class="featured-usage">已有 {{templates[0].useCount || 0}} 人使用</text>
+            <text class="featured-action">查看模板</text>
+          </view>
+        </view>
+
+        <block wx:if="{{templates.length > 1}}">
+          <view class="section-heading">
+            <image class="decorative-image section-mountains" src="/assets/illustrations/ink-mountains.png" mode="scaleToFill" />
+            <text class="song-title">{{keyword ? '搜索结果' : '新作上架'}}</text>
+            <text class="section-rule"></text>
+          </view>
+          <view class="template-shelf">
+            <view wx:for="{{newTemplateRows}}" wx:key="id" wx:for-item="row" class="template-row">
+              <view wx:for="{{row.items}}" wx:key="id" wx:for-item="template" class="template-card-shell">
+                <share-element class="template-card" transition-on-gesture key="se-{{template.id}}"
+                  transform data-item="{{template}}" bind:tap="tapSelect">
+                  <view class="template-card-cover">
+                    <image src="{{template.thumbnail}}" mode="aspectFill" />
+                  </view>
+                  <view class="template-meta">
+                    <text class="song-title template-name">{{template.name}}</text>
+                    <text class="template-usage">{{template.useCount || 0}} 人使用</text>
+                  </view>
+                </share-element>
               </view>
-              <view class="listMore observe{{type.id}}">
-                <text wx:if="{{wallpapers.list[type.id].total && wallpapers.list[type.id].total <= wallpapers.list[type.id].page*pageSize}}">没有更多</text>
-                <text wx:else bind:tap="tapMore">加载更多</text>
-              </view>
-              -->
             </view>
-          </scroll-view>
-        </swiper-item>
-      </swiper>
-    </view>
-  </view> 
+          </view>
+        </block>
+      </view>
+
+      <view wx:elif="{{!loading}}" class="empty-state illustrated-empty">
+        <image class="decorative-image empty-courtyard"
+          src="/assets/illustrations/empty-template-search.jpg" mode="aspectFill" />
+        <view class="empty-copy">
+          <text class="song-title">未觅得合意模板</text>
+          <text>换个场景或关键词，继续寻一份合意</text>
+        </view>
+      </view>
+
+      <view class="loading-state">
+        <text wx:if="{{loading}}">正在展卷…</text>
+        <text wx:elif="{{templates.length && !hasMore}}">已阅尽当前模板</text>
+      </view>
+      <view class="tabbar-spacer"></view>
+    </scroll-view>
+  </view>
 </page-meta>

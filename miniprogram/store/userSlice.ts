@@ -1,5 +1,4 @@
 import { _request } from "../utils/util";
-import { _Server } from "./global";
 
 export type TUser = {
   token: string,

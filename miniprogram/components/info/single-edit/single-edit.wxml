@@ -20,7 +20,7 @@
             <textarea class="textarea" value="{{popText}}" placeholder="{{placeholder}}"
                 maxlength="140" focus="{{popFocus}}" 
                 placeholder-class="textarea1" 
-                placeholder-style="{{color:'#999999'}}"
+                placeholder-style="color: #999999;"
                 confirm-type="done"
                 bindinput="onInput">
             </textarea>

@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar",
+    "material": "/components/material/material"
+  },
+  "disableScroll": true,
+  "navigationStyle": "custom",
+  "componentFramework": "glass-easel"
+}

@@ -1,257 +1,423 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <navigation-bar bind:bindMenu="bindMenu" back>
-  </navigation-bar>
-  <view class="contain">
-    <text wx:if="{{invitation.backgroundMusic || template.backgroundMusic}}" class="music iconfont icon-yinle {{play?'play':''}}" bind:tap="tapPlay"/>
-    <scroll-view scroll-y scrollbar="false" type="list">
-        <snapshot id="snapshot">
-            <view class="templateBG" bind:tap="">
-                <image src="{{template.bg || template.coverImage}}" mode="widthFix"  />
-                <view wx:for="{{template._templateData}}" wx:for-item="element" key=""
-                    bind:tap="tapEditElement" data-item="{{element,index}}"
-                    style="{{element.style}}" class="{{editMode && element.visible ? 'mark':''}}">
-                    <image wx:if="{{element.type === 'image'}}" 
-                        mode="aspectFill" src="{{element.name}}"/>
-                    <text wx:else>{{element.name}}</text>
+  <navigation-bar bind:bindMenu="bindMenu" back title="制作邀请函"></navigation-bar>
+  <image class="paper-texture" src="/assets/illustrations/paper-xuan.webp" mode="scaleToFill" />
+
+  <view wx:if="{{editorState === 'loading'}}" class="editor-state">
+    <view class="editor-state-seal loading"></view>
+    <text class="song-title">正在准备编辑器</text>
+    <text>正在恢复模板、字体与邀请内容…</text>
+  </view>
+
+  <view wx:elif="{{editorState === 'error'}}" class="editor-state">
+    <text class="editor-state-kicker">INVITATION STUDIO</text>
+    <view class="editor-state-seal"><text>候</text></view>
+    <text class="song-title">编辑内容未能载入</text>
+    <text>{{editorError}}</text>
+    <view class="editor-state-actions">
+      <button class="secondary" bind:tap="tapRetryEditor">重新加载</button>
+      <button class="primary" bind:tap="tapBack">返回选择模板</button>
+    </view>
+  </view>
+
+  <view wx:else class="contain">
+    <view class="canvas-workspace">
+      <view class="canvas-stage">
+        <text wx:if="{{invitation.backgroundMusic || template.backgroundMusic}}"
+          class="music iconfont icon-yinle {{play ? 'play' : ''}}" bind:tap="tapPlay" />
+        <scroll-view scroll-y show-scrollbar="{{false}}" type="list">
+          <snapshot id="snapshot">
+            <view class="templateBG">
+              <image wx:if="{{template.bg || template.coverImage}}" src="{{template.bg || template.coverImage}}" mode="widthFix" />
+              <view wx:else class="fallback-template">
+                <view class="fallback-paper-side">
+                  <image class="decorative-image fallback-lattice" src="/assets/illustrations/lattice-window.png" mode="aspectFit" />
+                  <image class="decorative-image fallback-mountains" src="/assets/illustrations/ink-mountains.png" mode="scaleToFill" />
+                  <image class="decorative-image fallback-railing" src="/assets/illustrations/railing.png" mode="scaleToFill" />
                 </view>
+                <view class="fallback-pine-side">
+                  <image class="decorative-image fallback-cloud" src="/assets/illustrations/auspicious-cloud.png" mode="aspectFit" />
+                  <text class="song-title fallback-title">{{invitation.title || invitation.eventName || '年会邀请'}}</text>
+                  <text class="fallback-date">{{invitation.eventDate || '日期待定'}}</text>
+                  <text class="fallback-address">{{invitation.eventAddress || '地点待定'}}</text>
+                  <image class="decorative-image fallback-seal" src="/assets/illustrations/cinnabar-seal.png" mode="aspectFit" />
+                </view>
+              </view>
+              <view wx:for="{{template._templateData}}" wx:for-item="element" wx:key="*this"
+                bind:tap="tapEditElement" data-element="{{element}}" data-index="{{index}}"
+                style="{{element.displayStyle || element.style}}"
+                class="template-element {{editMode && selectedElement && popElement.index === index ? 'selected' : ''}}">
+                <image wx:if="{{element.type === 'image'}}" mode="aspectFill" src="{{element.name}}" />
+                <text wx:else>{{element.name}}</text>
+              </view>
             </view>
-        </snapshot>
-    </scroll-view>
-    <view class="footer">
-        <view>
-            <text bind:tap="tapShowEdit">编辑</text>
-        </view>
-        <view>
-            <text bind:tap="tapSave">保存</text>
-        </view>
-    </view>
-  </view> 
-  <half-layout id="the-elementEdit" bind:close="layoutClose" back="{{!1}}" height="70vh">
-    <view slot="header" class="elementEdit-header">
-    </view>
-    <view slot="content" class="elementEdit-content">
-      <view class="elementImage" wx:if="{{popElement.element.type === 'image'}}">
-        <view class="content">
-          <image src="{{popElement.element.name}}" mode="aspectFit" />
-        </view>
-        <view class="footer">
-          <button bind:tap="tapMaterial" data-select="image">更换图片</button>
-        </view>
-      </view>
-      <view class="elementData" wx:else>
-        <view class="header">
-            <view wx:for="{{attrs.list}}" wx:for-index="index">
-                <text bind:tap="tapAttrChange" data-index="{{index}}"
-               class="{{index === attrs.select ? 'active':''}}">{{item}}</text>
-            </view>
-        </view>
-        <view class="footer">
-            <textarea wx:if="{{popElement.element.type === 'textarea'}}" class="textarea" value="{{popElement.element.name}}" 
-                focus="{{popFocus}}"
-                placeholder-class="textarea1" 
-                placeholder-style="{{color:'#999999'}}"
-                confirm-type="done"
-                bindinput="onInput">
-            </textarea>
-            <input wx:else type="text" bind:input="onInput" 
-                value="{{popElement.element.name}}" focus="{{popFocus}}"/>
-        </view>
-        <view class="content">
-            <view class="fonts attrSelect" wx:if="{{attrs.select === 0}}">
-                <!--<picker bindchange="bindTemplateDataIndexChange" 
-                    value="{{editTemplateData.fontFamily.select}}" range="{{editTemplateData.fontFamily.list}}" range-key="name"
-                    data-key="font-family"
-                    >
-                    <view class="picker" style="font-family:{{editTemplateData.fontFamily.list[editTemplateData.fontFamily.select].font}}">
-                        {{editTemplateData.fontFamily.list[editTemplateData.fontFamily.select].name}}
-                    </view>
-                </picker>-->
-                <text wx:for="{{editTemplateData.fontFamily.list}}" bind:tap="bindTemplateDataIndexChange"
-                    data-key="font-family" data-index="{{index}}" style="font-family:{{item.name}}">{{item.name}}</text>
-            </view>
-            <view class="sizes attrSelect" wx:if="{{attrs.select === 1}}">
-                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.fontSize}}" 
-                    data-key="font-size" data-px="true"
-                    min="1" max="25" step="1" show-value />
-            </view>
-            <view class="letterSpacings attrSelect" wx:if="{{attrs.select === 2}}">
-                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.letterSpacing}}" 
-                    data-key="letter-spacing" data-px="true"
-                    min="0" max="10" step="1" show-value />
-            </view>
-            <view class="lineHeights attrSelect" wx:if="{{attrs.select === 3}}">
-                <slider bindchange="bindTemplateDataChange" value="{{editTemplateData.lineHeight}}" 
-                    data-key="line-height" data-px=""
-                    min=".5" max="3" step=".5" show-value />
-            </view>
-            <view class="textAligns attrSelect" wx:if="{{attrs.select === 4}}">
-                <text wx:for="{{editTemplateData.textAlign.list}}" bind:tap="bindTemplateDataIndexChange"
-                    data-key="text-align" data-index="{{index}}" 
-                    class="iconfont {{item.name}} {{editTemplateData.textAlign.list[editTemplateData.textAlign.select].name === item.name ? 'active':''}}" />
-                <!--<picker bindchange="bindTemplateDataIndexChange" value="{{editTemplateData.textAlign.select}}" 
-                    range="{{editTemplateData.textAlign.list}}" range-key="name"
-                    data-key="text-align"
-                    >
-                    <view class="picker">
-                        {{editTemplateData.textAlign.list[editTemplateData.textAlign.select].name}}
-                    </view>
-                </picker>-->
-            </view>
-            <view class="colors attrSelect" wx:if="{{attrs.select === 5}}">
-                <color-picker bind:changecolor="bindTemplateDataChange"
-                    data-key="color" 
-                ></color-picker>
-            </view>
-        </view>
+          </snapshot>
+        </scroll-view>
       </view>
     </view>
-  </half-layout>
-  <half-layout id="the-edit" back="{{!1}}" height='90vh' bind:close="layoutClose" background="var(--color-absbg)">   
-    <view slot="header" class="edit-header">
-        <view class="header">
-            <text bind:tap="tapTempRemove" class="_button">清除</text>
-            <text bind:tap="tapTempSave" class="_button">保存</text>
+
+    <view class="quick-editor">
+      <view class="module-tabs" role="tablist" aria-label="邀请函编辑模块">
+        <button wx:for="{{editorModules}}" wx:key="value"
+          class="module-tab {{editorModule === item.value ? 'active' : ''}}"
+          bind:tap="tapEditorModule" data-module="{{item.value}}" role="tab">
+          <text>{{item.index}}</text>
+          <text>{{item.label}}</text>
+        </button>
+      </view>
+
+      <view class="module-context">
+        <block wx:if="{{editorModule === 'content'}}">
+          <view class="context-heading">
+            <view>
+              <text>CONTENT PROOF</text>
+              <text class="song-title">邀请内容</text>
+            </view>
+            <text>选择字段后直接修改</text>
+          </view>
+
+          <scroll-view class="field-rail" scroll-x show-scrollbar="{{false}}" enable-flex>
+            <view class="field-track">
+              <text wx:for="{{contentFields}}" wx:key="value"
+                class="field-chip {{quickField === item.value ? 'active' : ''}}"
+                bind:tap="tapQuickField" data-field="{{item.value}}">{{item.label}}</text>
+            </view>
+          </scroll-view>
+
+          <view wx:if="{{quickField === 'eventDate'}}" class="quick-input-row quick-field-editor">
+            <picker class="quick-picker" mode="date" bindchange="onDateChange"
+              value="{{invitation.eventDate}}" start="{{startDate}}">
+              <view>{{invitation.eventDate || '选择活动日期'}}</view>
+            </picker>
+            <label class="lunar-toggle">
+              <switch type="checkbox" checked="{{showLunar}}" bindchange="onLunarChange" color="#2F4A46" />
+              <text>显示农历</text>
+            </label>
+          </view>
+
+          <view wx:elif="{{quickField === 'eventTime'}}" class="quick-input-row quick-field-editor">
+            <picker class="quick-picker" mode="time" bindchange="onTimeChange" value="{{invitation.eventTime}}">
+              <view>{{invitation.eventTime || '选择活动时间'}}</view>
+            </picker>
+          </view>
+
+          <view wx:else class="quick-input-row quick-field-editor">
+            <textarea wx:if="{{quickField === '_eventContent'}}" value="{{invitation._eventContent}}"
+              maxlength="-1" cursor-spacing="28" placeholder="填写邀请词"
+              bindinput="bindContentChange" data-key="_eventContent"></textarea>
+            <input wx:elif="{{quickField === 'title'}}" type="text" value="{{invitation.title}}" cursor-spacing="28"
+              placeholder="填写活动主题" bindinput="bindContentChange" data-key="title" />
+            <input wx:elif="{{quickField === 'eventAddress'}}" type="text" value="{{invitation.eventAddress}}" cursor-spacing="28"
+              placeholder="填写活动地点" bindinput="bindContentChange" data-key="eventAddress" />
+            <input wx:else type="text" value="{{invitation.hostName}}" cursor-spacing="28"
+              placeholder="填写邀请人" bindinput="bindContentChange" data-key="hostName" />
+            <button wx:if="{{quickField === 'eventAddress'}}" class="location-quick-button"
+              bind:tap="tapLocation">选地点</button>
+          </view>
+        </block>
+
+        <block wx:elif="{{editorModule === 'style'}}">
+          <view wx:if="{{selectedElement && selectedElementType !== 'image'}}" class="inline-style-editor">
+            <view class="inline-style-meta">
+              <view>
+                <text>SELECTED COPY</text>
+                <text class="song-title">{{selectedElementLabel || '当前文字'}}</text>
+              </view>
+              <view class="live-preview-state">
+                <view></view>
+                <text>实时预览</text>
+              </view>
+            </view>
+
+            <view class="quick-input-row inline-text-input">
+              <textarea wx:if="{{popElement.element.type === 'textarea'}}" value="{{popElement.element.name}}"
+                maxlength="-1" cursor-spacing="28" bindinput="onInput"></textarea>
+              <input wx:else type="text" value="{{popElement.element.name}}" cursor-spacing="28" bindinput="onInput" />
+            </view>
+
+            <scroll-view class="inline-style-controls" scroll-y enhanced bounces="{{false}}" show-scrollbar="{{false}}">
+              <scroll-view class="attr-tabs inline-attr-tabs" scroll-x show-scrollbar="{{false}}" enable-flex>
+                <view class="attr-tab-track">
+                  <view wx:for="{{attrs.list}}" wx:key="label"
+                    bind:tap="tapAttrChange" data-index="{{index}}"
+                    class="attr-tab {{index === attrs.select ? 'active' : ''}}">
+                    <text>{{item.mark}}</text>
+                    <text>{{item.label}}</text>
+                  </view>
+                </view>
+              </scroll-view>
+
+              <view class="attr-panel inline-attr-panel">
+                <view class="fonts attrSelect" wx:if="{{attrs.select === 0}}">
+                  <scroll-view class="font-samples" scroll-x show-scrollbar="{{false}}" enable-flex>
+                    <view class="font-sample-track">
+                      <view wx:for="{{editTemplateData.fontFamily.list}}" wx:key="key"
+                        bind:tap="bindTemplateDataIndexChange" data-key="font-family" data-index="{{index}}"
+                        class="font-sample {{editTemplateData.fontFamily.select === index ? 'active' : ''}}"
+                        style="font-family:{{item.name}}">
+                        <text>邀</text>
+                        <view>
+                          <text>{{item.name}}</text>
+                          <text>邀请函样字</text>
+                        </view>
+                      </view>
+                    </view>
+                  </scroll-view>
+                </view>
+                <view class="slider-control attrSelect" wx:if="{{attrs.select === 1}}">
+                  <view><text>字号</text><text>{{editTemplateData.fontSize || 4}} vw</text></view>
+                  <slider bindchanging="bindTemplateDataChange" bindchange="bindTemplateDataChange"
+                    value="{{editTemplateData.fontSize}}" data-key="font-size" data-px="true"
+                    min="1" max="25" step="1" activeColor="#B53B2E" block-size="18" />
+                </view>
+                <view class="slider-control attrSelect" wx:if="{{attrs.select === 2}}">
+                  <view><text>字间距</text><text>{{editTemplateData.letterSpacing || 0}} vw</text></view>
+                  <slider bindchanging="bindTemplateDataChange" bindchange="bindTemplateDataChange"
+                    value="{{editTemplateData.letterSpacing}}" data-key="letter-spacing" data-px="true"
+                    min="0" max="10" step="1" activeColor="#B53B2E" block-size="18" />
+                </view>
+                <view class="slider-control attrSelect" wx:if="{{attrs.select === 3}}">
+                  <view><text>行距</text><text>{{editTemplateData.lineHeight || 1.5}}</text></view>
+                  <slider bindchanging="bindTemplateDataChange" bindchange="bindTemplateDataChange"
+                    value="{{editTemplateData.lineHeight}}" data-key="line-height"
+                    min="0.5" max="3" step="0.5" activeColor="#B53B2E" block-size="18" />
+                </view>
+                <view class="textAligns attrSelect" wx:if="{{attrs.select === 4}}">
+                  <view wx:for="{{editTemplateData.textAlign.list}}" wx:key="key"
+                    bind:tap="bindTemplateDataIndexChange" data-key="text-align" data-index="{{index}}"
+                    class="align-button {{editTemplateData.textAlign.select === index ? 'active' : ''}}">
+                    <text class="iconfont {{item.name}}"></text>
+                    <text>{{item.label}}</text>
+                  </view>
+                </view>
+                <view class="colors attrSelect" wx:if="{{attrs.select === 5}}">
+                  <view class="color-preset-list">
+                    <view wx:for="{{colorPresets}}" wx:key="value"
+                      class="color-preset {{editTemplateData.color === item.value ? 'active' : ''}}"
+                      bind:tap="bindTemplateDataChange" data-key="color" data-value="{{item.value}}">
+                      <view style="background-color:{{item.value}}"></view>
+                      <text>{{item.label}}</text>
+                    </view>
+                  </view>
+                  <view class="inline-color-value" bind:tap="toggleCustomColor">
+                    <view style="background-color:{{editTemplateData.color || '#20211E'}}"></view>
+                    <text>{{editTemplateData.color || '#20211E'}}</text>
+                    <text>{{customColorOpen ? '收起取色' : '精细取色'}}</text>
+                  </view>
+                  <view wx:if="{{customColorOpen}}" class="custom-color-picker">
+                    <color-picker value="{{editTemplateData.color}}"
+                      bind:changecolor="bindTemplateDataChange" data-key="color"></color-picker>
+                  </view>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+          <view wx:else class="module-empty">
+            <text>先点选画布中的文字</text>
+            <text>可调整字体、字号、间距、行距、对齐和颜色</text>
+          </view>
+        </block>
+
+        <block wx:elif="{{editorModule === 'image'}}">
+          <view class="quick-image-editor module-feature">
+            <view class="module-feature-icon iconfont icon-xiangjixiao"></view>
+            <view class="module-feature-copy">
+              <text>IMAGE MATERIAL</text>
+              <text>{{selectedElementType === 'image' ? selectedElementLabel : '个性图片'}}</text>
+              <text>保留模板中的位置与裁切，仅替换图片内容</text>
+            </view>
+            <button bind:tap="tapQuickImage">更换图片</button>
+          </view>
+        </block>
+
+        <block wx:elif="{{editorModule === 'music'}}">
+          <view class="quick-image-editor module-feature">
+            <view class="module-feature-icon iconfont icon-yinle"></view>
+            <view class="module-feature-copy">
+              <text>BACKGROUND MUSIC</text>
+              <text>{{invitation.backgroundMusic ? '已选择背景音乐' : '暂未选择背景音乐'}}</text>
+              <text>发布后访客可播放或暂停</text>
+            </view>
+            <button bind:tap="tapMaterial" data-select="music">选择音乐</button>
+          </view>
+        </block>
+
+        <block wx:else>
+          <view class="quick-image-editor module-feature">
+            <view class="module-feature-icon iconfont icon-shezhi"></view>
+            <view class="module-feature-copy">
+              <text>GUEST SETTINGS</text>
+              <text>参与设置</text>
+              <text>设置参与人数、公开范围与留言选项</text>
+            </view>
+            <button bind:tap="tapShowEdit">编辑设置</button>
+          </view>
+        </block>
+      </view>
+
+      <view class="quick-footer">
+        <view class="editor-save-state {{isDirty ? 'dirty' : ''}}">
+          <view></view>
+          <text>{{isDirty ? '有未保存修改' : '当前内容已保存'}}</text>
         </view>
+        <view class="quick-action-group">
+          <button class="quick-save secondary" disabled="{{isSaving}}" bind:tap="tapSave" data-status="0">
+            {{invitation.status === 1 ? '保存修改' : '保存草稿'}}
+          </button>
+          <button class="quick-save primary" disabled="{{isSaving}}" bind:tap="tapSave" data-status="1">发布邀请</button>
+        </view>
+      </view>
     </view>
+  </view>
+
+  <half-layout id="the-edit" back="{{false}}" height="70vh" bind:close="layoutClose" background="var(--paper-light)">
+    <view slot="header" class="sheet-header form-sheet-header">
+      <view>
+        <text class="sheet-kicker">GUEST SETTINGS</text>
+        <text class="sheet-title song-title">参与设置</text>
+      </view>
+      <text class="sheet-close iconfont icon-guanbixiao" bind:tap="tapHideEdit"></text>
+    </view>
+
     <view slot="content" class="edit-content">
-      <view class="fixData">
-        <view>
-            <text>主题</text>
-            <input type="text" placeholder="请输入主题" value="{{invitation.title}}"
-                bind:input="bindContentChange" data-key="title" focus="{{titleFocus}}" />
+      <view wx:if="{{formTab === 'content'}}" class="content-form">
+        <view class="form-intro">
+          <text>一次填写，自动替换模板中的对应文字</text>
+          <text>日期、时间与地点也会同步更新邀请词占位内容。</text>
         </view>
-        <view>
-            <text>日期</text>
-            <picker class="picker" mode="date" bindchange="onDateChange" 
+
+        <view class="form-section">
+          <view class="section-heading"><text>01</text><text>基本信息</text></view>
+          <view class="field-row field-column">
+            <text class="field-label">主题</text>
+            <input type="text" placeholder="例如：茶空间开业雅集" value="{{invitation.title}}"
+              bind:input="bindContentChange" data-key="title" focus="{{titleFocus}}" />
+          </view>
+
+          <view class="field-pair">
+            <view class="field-row field-column">
+              <text class="field-label">日期</text>
+              <picker class="picker" mode="date" bindchange="onDateChange"
                 value="{{invitation.eventDate}}" start="{{startDate}}">
                 <view class="pickerDate">
-                    <text wx:if="{{invitation.eventDate}}" class="_ellipsis" style="color:var(--color-abf2)">{{invitation.eventDate}}</text>
-                    <text wx:else style="color:var(--color-abf4)">点击选择日期</text>
-                    <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+                  <text class="{{invitation.eventDate ? '' : 'placeholder'}}">{{invitation.eventDate || '选择日期'}}</text>
+                  <text class="iconfont icon-a-youjiantou_huaban1"></text>
                 </view>
-            </picker>
-        </view>
-        <view>
-            <text bind:tap="tapLunar">农历</text>
-            <view class="_ellipsis lunarDate">{{showLunar ? invitation.lunarDate : ''}}</view>
-        </view>
-        <view>
-            <text>时间</text>
-            <picker class="picker" mode="time" bindchange="onTimeChange" 
-                value="{{invitation.eventTime}}">
+              </picker>
+            </view>
+            <view class="field-row field-column">
+              <text class="field-label">时间</text>
+              <picker class="picker" mode="time" bindchange="onTimeChange" value="{{invitation.eventTime}}">
                 <view class="pickerDate">
-                    <text wx:if="{{invitation.eventTime}}" class="_ellipsis" style="color:var(--color-abf2)">{{invitation.eventTime}}</text>
-                    <text wx:else style="color:var(--color-abf4)">点击选择时间</text>
-                    <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+                  <text class="{{invitation.eventTime ? '' : 'placeholder'}}">{{invitation.eventTime || '选择时间'}}</text>
+                  <text class="iconfont icon-a-youjiantou_huaban1"></text>
                 </view>
-            </picker>
-        </view>
-        <view>
-            <text>地点</text>
-            <view class="pickerLocation">
-                <textarea placeholder="选择定位后补充详细地址" value="{{invitation.eventAddress}}"
-                    bind:input="bindContentChange" data-key="eventAddress" />
-                <text class="iconfont icon-dingweixiao" bind:tap="tapLocation"
-                    style="color:{{invitation.longitude && invitation.latitude ? 'var(--color-abdicon)' : 'var(--color-abdicon)'}};" />
+              </picker>
             </view>
-        </view>
-        <view>
-            <text>邀请词</text>
-            <textarea placeholder="请输入邀请词" value="{{invitation._eventContent}}"
-                bind:input="bindContentChange" data-key="_eventContent" focus="{{titleFocus}}" />
-        </view>
-        <view>
-            <text>邀请人</text>
-            <input type="nickname" placeholder="请输入邀请人" value="{{invitation.hostName || userInfo.nickName || userInfo.realName}}"
-                bind:input="bindContentChange" data-key="hostName"/>
-        </view>
-        <!--
-        <view>
-            <text>地点</text>
-            <view class="pickerLocation" bind:tap="tapLocation" style="height:4rem;">
-                <text wx:if="{{invitation.longitude && invitation.latitude}}" 
-                    style="color:var(--color-abf2)">{{invitation._eventAddress}}</text>
-                <text wx:else style="color:var(--color-abf4)">点击选择定位</text>
-                <text class="iconfont icon-a-youjiantou_huaban1" style="color:var(--color-abdicon);" />
+          </view>
+
+          <view class="lunar-row">
+            <view>
+              <text>显示农历</text>
+              <text>{{invitation.lunarDate || '选择日期后自动换算'}}</text>
             </view>
-        </view>
-        -->
-        <!--
-        <view>
-            <text>背景音乐</text>
-            <view class="pickerMusic _ellipsis" bind:tap="tapMaterial" data-select="music">
-                <block wx:if="{{template.backgroundMusic || invitation.backgroundMusic}}">
-                    <text class="iconfont {{play?'icon-zanting':'icon-bofang'}}"
-                        catch:tap="tapPlay" style="padding:0 1rem"/>
-                    <view class="musicTitle">
-                        <text>{{invitation.backgroundMusic && material.name}}</text>
-                    </view>
-                    <text class="iconfont icon-guanbijiantou" catch:tap="tapCancelMusic"
-                        style="color:var(--color-abdicon);padding:0 1rem" />
-                </block>
-                <text wx:else class="iconfont icon-yinle" style="margin-left: auto;" />
+            <switch checked="{{showLunar}}" bind:change="onLunarChange" color="#B53B2E" />
+          </view>
+
+          <view class="field-row field-column">
+            <text class="field-label">地点</text>
+            <view class="location-field">
+              <textarea placeholder="选择定位后可补充地址名称" value="{{invitation.eventAddress}}"
+                bind:input="bindContentChange" data-key="eventAddress"></textarea>
+              <text class="location-button iconfont icon-dingweixiao" bind:tap="tapLocation"></text>
             </view>
+          </view>
         </view>
-        -->
+
+        <view class="form-section">
+          <view class="section-heading"><text>02</text><text>邀请表达</text></view>
+          <view class="field-row field-column">
+            <text class="field-label">邀请词</text>
+            <textarea class="invitation-copy" placeholder="写下邀请缘由、活动亮点与期待"
+              value="{{invitation._eventContent}}" bind:input="bindContentChange" data-key="_eventContent"></textarea>
+          </view>
+          <view class="field-row field-column">
+            <text class="field-label">邀请人</text>
+            <input type="nickname" placeholder="个人、多人或单位名称"
+              value="{{invitation.hostName || userInfo.nickName || userInfo.realName}}"
+              bind:input="bindContentChange" data-key="hostName" />
+          </view>
+        </view>
+
+        <view class="form-section music-section">
+          <view class="section-heading"><text>03</text><text>背景音乐</text></view>
+          <view class="music-row">
+            <view class="music-icon" bind:tap="tapPlay">
+              <text class="iconfont {{play ? 'icon-zanting' : 'icon-bofang'}}"></text>
+            </view>
+            <view class="music-copy">
+              <text>{{material.name || (invitation.backgroundMusic || template.backgroundMusic ? '已选择背景音乐' : '未选择背景音乐')}}</text>
+              <text>轻触右侧从收藏或音乐库替换</text>
+            </view>
+            <text class="music-change" bind:tap="tapMaterial" data-select="music">更换</text>
+          </view>
+        </view>
       </view>
-      <view class="selectMusic">
-        <text wx:if="{{template.backgroundMusic || invitation.backgroundMusic}}" class="iconfont icon-yinle {{play?'play':''}}" catch:tap="tapPlay" />
-        <text wx:else class="iconfont icon-MP_" bind:tap="tapMaterial" data-select="music" />
-      </view>
-      <view class="options">
-        <view>
-            <switch type="switch" checked="{{invitation.allowAnonymous}}" 
-                data-key="allowAnonymous"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>允许匿名参加</text>
+
+      <view wx:else class="permission-form">
+        <view class="form-intro">
+          <text>设置宾客回复与活动内容权限</text>
+          <text>发布前仍可随时回来调整。</text>
         </view>
-        <view>
-            <switch type="switch" checked="{{invitation.needPhone}}" 
-                data-key="needPhone"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>需要填写手机</text>
+
+        <view class="permission-section">
+          <view class="section-heading"><text>01</text><text>回复要求</text></view>
+          <view class="permission-item">
+            <view><text>允许匿名参加</text><text>宾客可以不填写真实姓名</text></view>
+            <switch checked="{{invitation.allowAnonymous}}" data-key="allowAnonymous" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
+          <view class="permission-item">
+            <view><text>需要填写手机</text><text>提交回复时手机号为必填项</text></view>
+            <switch checked="{{invitation.needPhone}}" data-key="needPhone" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
+          <view class="permission-item">
+            <view><text>可以携带多人</text><text>允许宾客修改同行人数</text></view>
+            <switch checked="{{invitation.allowModifyGuests}}" data-key="allowModifyGuests" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
+          <view wx:if="{{invitation.allowModifyGuests}}" class="guest-limit">
+            <view><text>最多参加人数</text><text>{{invitation.maxGuests || 1}} 人</text></view>
+            <slider value="{{invitation.maxGuests || 1}}" min="1" max="10" step="1"
+              bindchange="bindGuestCount" activeColor="#B53B2E" block-size="18" />
+          </view>
         </view>
-        <view>
-            <switch type="switch" checked="{{invitation.allowModifyGuests}}" 
-                data-key="allowModifyGuests"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>可以携带多人</text>
+
+        <view class="permission-section">
+          <view class="section-heading"><text>02</text><text>活动内容</text></view>
+          <view class="permission-item">
+            <view><text>允许下载活动照片</text><text>宾客可将照片保存到本地</text></view>
+            <switch checked="{{invitation.allowDownloadPhotos}}" data-key="allowDownloadPhotos" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
+          <view class="permission-item">
+            <view><text>允许上传活动照片</text><text>宾客可共同补充活动相册</text></view>
+            <switch checked="{{invitation.allowUploadPhotos}}" data-key="allowUploadPhotos" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
+          <view class="permission-item">
+            <view><text>允许发表活动感言</text><text>开启照片评论与活动留言</text></view>
+            <switch checked="{{invitation.enableMessage}}" data-key="enableMessage" bind:change="bindOptionChange" color="#B53B2E" />
+          </view>
         </view>
-        <view>
-            <switch type="switch" checked="{{invitation.allowDownloadPhotos}}" 
-                data-key="allowDownloadPhotos"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>允许下载活动照片</text>
-        </view>
-        <view>
-            <switch type="switch" checked="{{invitation.allowUploadPhotos}}" 
-                data-key="allowUploadPhotos"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>允许上传活动照片</text>
-        </view>
-        <view>
-            <switch type="switch" checked="{{invitation.enableMessage}}" 
-                data-key="enableMessage"
-                bind:change="bindOptionChange">
-            </switch>
-            <text>允许发表活动感言</text>
-        </view>    
       </view>
     </view>
+
+    <view slot="footer" class="sheet-footer">
+      <button class="sheet-save-button" bind:tap="tapHideEdit">完成</button>
+    </view>
   </half-layout>
+
   <popup id="the-material">
     <view class="material" catch:tap="prevent">
-        <view class="content">
-            <material mode="select" select="{{materialSelect}}" bind:trigger="triggerMaterial" />
-        </view>
-        <view class="footer">
-
-        </view>
+      <view class="content">
+        <material mode="select" select="{{materialSelect}}" bind:trigger="triggerMaterial" />
+      </view>
     </view>
   </popup>
 </page-meta>

@@ -37,28 +37,29 @@ Component({
             pickupDetail: '',
             seatInfo: '',
         } as TFormData,
-    },
-    lifetimes: {
-        created() {
-        },
-        ready() {
-            console.log("ready-----");
-        },
+        submitting: false,
     },
     observers: {
         theResponse(current) {
-            console.log("observers:response-----", current);
+            if (!current) return;
             this.setData({
                 form: {
                     ...this.data.form,
-                    ...this.properties.theResponse
+                    ...current,
                 }
             })
         },
         theInvitation(invitation) {
-            console.log("observers:invitation-----", invitation);
+            if (!invitation) return;
+            const userInfo = getApp().globalData.userInfo || {};
+            const form = this.properties.theResponse ? this.data.form : {
+                ...this.data.form,
+                guestName: this.data.form.guestName || userInfo.realName || userInfo.nickName || "",
+                guestPhone: this.data.form.guestPhone || userInfo.phone || "",
+            };
             this.setData({
-                invitation
+                invitation,
+                form,
             })
         },
     },
@@ -76,41 +77,72 @@ Component({
             });
         },
         onResponseTypeTap(e: WechatMiniprogram.TouchEvent) {
-            const { value } = e.currentTarget.dataset;
+            const value = Number(e.currentTarget.dataset.value);
             this.setData({
-                form: { ...this.data.form, responseType: value }
+                form: {
+                    ...this.data.form,
+                    responseType: value,
+                    guestCount: value === 1 ? Math.max(1, this.data.form.guestCount || 1) : 1,
+                    needAccommodation: value === 1 ? this.data.form.needAccommodation : 0,
+                    needPickup: value === 1 ? this.data.form.needPickup : 0,
+                }
             });
         },
         onCountChange(e: WechatMiniprogram.TouchEvent) {
             const { op } = e.currentTarget.dataset;
-            let count = this.data.form.guestCount;
-            count = op === '-' ? Math.max(1, count - 1) : count + 1;
+            const currentCount = Number(this.data.form.guestCount || 1);
+            let count = currentCount;
+            const maxGuests = Math.max(1, Number(this.data.invitation.maxGuests || 1));
+            count = op === '-' ? Math.max(1, count - 1) : Math.min(maxGuests, count + 1);
+            if (op === '+' && currentCount >= maxGuests) {
+                wx.showToast({ title: `最多可填写 ${maxGuests} 人`, icon: 'none' });
+            }
             this.setData({
                 form: { ...this.data.form, guestCount: count }
             });
         },
         onSubmit() {
-            const { form } = this.data;
-            if (!form.guestName.trim()) {
+            if (this.data.submitting) return;
+            const { form, invitation } = this.data;
+            if (!invitation.allowAnonymous && !form.guestName.trim()) {
                 wx.showToast({ title: '请填写姓名', icon: 'error' });
                 return;
             }
-            if (!form.guestPhone.trim() || !/^1\d{10}$/.test(form.guestPhone)) {
+            const phone = form.guestPhone.trim();
+            if (invitation.needPhone && !phone) {
+                wx.showToast({ title: '请填写手机号', icon: 'error' });
+                return;
+            }
+            if (phone && !/^1\d{10}$/.test(phone)) {
                 wx.showToast({ title: '请填写正确的手机号', icon: 'error' });
                 return;
             }
             const entity = {
                 ...form,
-                invitationId: this.data.invitation.id,
+                invitationId: invitation.id,
+                guestPhone: phone,
+                guestCount: form.responseType === 1 && invitation.allowModifyGuests
+                    ? Math.min(Number(form.guestCount || 1), Math.max(1, Number(invitation.maxGuests || 1)))
+                    : 1,
+                needAccommodation: form.responseType === 1 ? form.needAccommodation : 0,
+                accommodationDetail: form.responseType === 1 && form.needAccommodation
+                    ? form.accommodationDetail
+                    : "",
+                needPickup: form.responseType === 1 ? form.needPickup : 0,
+                pickupDetail: form.responseType === 1 && form.needPickup ? form.pickupDetail : "",
+                status: form.status === undefined ? 1 : form.status,
+                isSigned: form.isSigned || 0,
             } as unknown as TResponse;
+            this.setData({ submitting: true });
             wx.showLoading({ title: '提交中...' });
             createResponse(entity).then(() => {
-                wx.hideLoading();
                 wx.showToast({ title: '回复成功！', icon: 'success' });
                 this.onTrigger('success');
             }).catch(() => {
-                wx.hideLoading();
                 wx.showToast({ title: '回复失败', icon: 'error' });
+            }).finally(() => {
+                wx.hideLoading();
+                this.setData({ submitting: false });
             });
         },
         onTrigger(status: string) {

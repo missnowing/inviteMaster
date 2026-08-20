@@ -12,11 +12,11 @@
     <swiper-item class="swiperItem" wx:for="{{materialCategorys}}" wx:key="code">
       <scroll-view scroll-y scrollbar="false" type="list">
         <view class="scrollContain">
-          <view class="material {{material.category === 'music'?'fourth':''}} add _flex" bind:tap="tapMaterialUpload">
+          <view class="material {{item.code === 'music'?'fourth':''}} add _flex" bind:tap="tapMaterialUpload">
             <text class="iconfont icon-zengjia" />
           </view>
           <view wx:for="{{materials[item.code].list}}" class="material {{material.category === 'music'?'fourth':''}}"
-              wx:for-item="material" key="{{material.id}}"
+              wx:for-item="material" wx:key="id"
               data-item="{{material}}" bind:tap="tapPreviewMaterial">
             <!-- 图片 -->
             <image wx:if="{{material.category === 'image'}}" src="{{_CDN + material.url}}" mode="aspectFit"
@@ -45,7 +45,7 @@
               <text class="name">{{material.name}}</text>
             </view>
           </view>
-          <view wx:if="{{materials[item.code].list%2!==0}}" class="material"></view>
+          <view wx:if="{{materials[item.code].list.length%2!==0}}" class="material"></view>
         </view>
       </scroll-view>
     </swiper-item>

@@ -1,0 +1,51 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <navigation-bar back="{{true}}" title="收藏夹"></navigation-bar>
+  <image class="paper-texture" src="/assets/illustrations/paper-xuan.webp" mode="scaleToFill" />
+  <view class="favorites-shell">
+    <scroll-view scroll-y show-scrollbar="{{false}}" type="list">
+      <view class="collection-intro">
+        <text class="collection-kicker">COLLECTION · 01</text>
+        <text class="song-title">所藏雅意</text>
+        <text>收藏的模板与请柬，都归置在这里</text>
+      </view>
+
+      <view class="collection-section">
+        <view class="section-heading">
+          <text class="song-title">模板收藏</text>
+          <text>{{templateFavorites.length}} 件</text>
+        </view>
+        <view class="favorite-grid">
+          <share-element wx:for="{{templateFavorites}}" class="favorite-item template-favorite-item"
+            transition-on-gesture wx:key="id" transform data-item="{{item}}" bind:tap="tapTemplateFavorite">
+            <image src="{{item.thumbnailUrl}}" mode="aspectFill" lazy-load="{{false}}" />
+            <text class="song-title">{{item.name || '收藏的模板'}}</text>
+          </share-element>
+        </view>
+        <view wx:if="{{!loading && !templateFavorites.length}}" class="empty-state">
+          <text class="song-title">暂无模板收藏</text>
+          <text>在模板预览页点“收藏”即可收进这里</text>
+        </view>
+      </view>
+
+      <view class="collection-section">
+        <view class="section-heading">
+          <text class="song-title">请柬收藏</text>
+          <text>{{invitationFavorites.length}} 件</text>
+        </view>
+        <view class="favorite-grid invitation-grid">
+          <view wx:for="{{invitationFavorites}}" class="favorite-item invitation-favorite-item" wx:key="id"
+            data-item="{{item}}" bind:tap="tapInvitationFavorite">
+            <image src="{{item.coverUrl}}" mode="aspectFill" lazy-load="{{false}}" />
+            <text class="song-title">{{item.title || item.eventName || '收藏的邀请函'}}</text>
+          </view>
+        </view>
+        <view wx:if="{{!loading && !invitationFavorites.length}}" class="empty-state">
+          <text class="song-title">暂无请柬收藏</text>
+          <text>收藏过的他人请柬会出现在这里</text>
+        </view>
+      </view>
+
+      <view class="safe-spacer"></view>
+    </scroll-view>
+  </view>
+</page-meta>

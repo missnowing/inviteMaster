@@ -1,6 +1,30 @@
-import { TFont, selectFonts, setPerlogo, wxLogin } from "../../store/global";
-import { ITemplate, TTemplate, TTemplateCategory, selectTemplate, selectTemplateCategory } from "../../store/template";
-import { selectUserInfo, setUser, setUserInfo } from "../../store/userSlice";
+import { TFont, restoreUserSession, selectFonts } from "../../store/global";
+import {
+  TTemplate,
+  TTemplateCategory,
+  selectTemplate,
+  selectTemplateCategory,
+} from "../../store/template";
+
+const visibleItems = <T extends { status: number }>(items: T[]) =>
+  items.filter((item) => item.status !== 0);
+
+type TTemplateRow = {
+  id: string,
+  items: TTemplate[],
+};
+
+const templateRows = (items: TTemplate[]) => {
+  const rows: TTemplateRow[] = [];
+  for (let index = 0; index < items.length; index += 2) {
+    const rowItems = items.slice(index, index + 2);
+    rows.push({
+      id: rowItems.map((item) => item.id).join("-"),
+      items: rowItems,
+    });
+  }
+  return rows;
+};
 
 Page({
   data: {
@@ -8,195 +32,113 @@ Page({
       fontsize: getApp().globalData.style.rem,
     },
     types: [] as TTemplateCategory[],
-    templates: {} as ITemplate,
-    selectIndex: 0,
-    selectCategory: 0,
+    templates: [] as TTemplate[],
+    newTemplateRows: [] as TTemplateRow[],
+    selectedParentCategoryId: 0,
+    inputKeyword: "",
+    keyword: "",
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    loading: false,
+    hasMore: true,
   },
+
   onLoad() {
-    getApp().setProxy("template", {
-      set: (target: typeof Proxy, key: string, value: ITemplate, receiver) => {
-        console.log(target, key, value, receiver);
-        this.setData({
-          templates: { ...value }
-        })
-      }
-    })
-    const success = () => {
-      console.log("success");
-      selectTemplateCategory().then(({ list: types }) => {
-        this.setData({
-          types,
-          selectCategory: types[0].id,
+    restoreUserSession().then(() => {
+      return Promise.all([
+        selectTemplateCategory(),
+        this.loadFonts(),
+      ]);
+    }).then(([categoryResult]) => {
+      const categoryList = categoryResult.list as TTemplateCategory[];
+      const types = visibleItems(categoryList).filter((item) => item.parentId === 0);
+      this.setData({ types });
+      return this.loadTemplates(true);
+    }).catch(() => {
+      wx.showToast({ title: "模板加载失败，请稍后重试", icon: "none" });
+    });
+  },
+
+  loadFonts() {
+    return selectFonts().then((fonts) => {
+      const fontList = fonts.list || [];
+      const loadNextFont = (index: number) => {
+        const font: TFont | undefined = fontList[index];
+        if (!font) return;
+        wx.loadFontFace({
+          family: font.fontKey,
+          source: `url("${font.url}")`,
+          complete: () => loadNextFont(index + 1),
         });
-        selectTemplate({ parentCategoryId: types[0].id });
-      });
-      selectFonts().then(fonts => {
-        // console.log(fonts);return;
-        let index = 0, count = fonts.list.length;
-        const fs = wx.getFileSystemManager();
-        {
-          //不缓存方案，让微信webview自行实现
-          const _fonts = fonts.list.map((font: TFont) => {
-            return {
-              family: font.fontKey,
-              url: font.url,
-              name: font.name,
-              key: font.fontKey
-            }
-          });
-          const { family: fontFamily, url: fontURL } = _fonts[index];
-          const loadFont = (fontFamily: string, fontURL: string) => {
-            console.log(fontFamily, fontURL)
-            wx.loadFontFace({
-              family: fontFamily,
-              // global: true,
-              source: `url("${fontURL}")`,
-              success() {
-                console.log(`${fontFamily} 加载成功`);
-              },
-              fail(err) {
-                console.error('字体加载失败', err);
-              },
-              complete: (message) => {
-                console.log("complete", message);
-                index++;
-                if (index >= count) return;
-                const { family: fontFamily, url: fontURL } = _fonts[index];
-                loadFont(fontFamily, fontURL);
-              },
-            });
-          }
-          loadFont(fontFamily, fontURL);
-        }
-        return;
-        {
-          // 无法解决转到base64后导致的主线程阻塞问题，因此暂时只能尽量使用webview的缓存机制
-          const loadFont = (filePath: string, fontFamily: string) => {
-            fs.readFile({
-              filePath: filePath,
-              encoding: 'base64',
-              success(res) {
-                wx.loadFontFace({
-                  family: fontFamily,
-                  global: true,
-                  source: `url("data:font/truetype;charset=utf-8;base64,${res.data}")`,
-                  success() {
-                    console.log(`${fontFamily} 加载成功`);
-                  },
-                  fail(err) {
-                    console.error('字体加载失败', err);
-                  },
-                  complete: (message) => {
-                    console.log("complete", message);
-                    index++;
-                    if (index >= count) return;
-                    const { family: fontFamily, url: fontURL } = _fonts[index];
-                    readFont(fontFamily, fontURL);
-                  },
-                });
-              },
-              fail(err) {
-                console.error('读取字体文件失败', err);
-              }
-            });
-          };
-          const downloadFont = (fontURL: string, filePath: string, fontFamily: string) => {
-            wx.downloadFile({
-              url: fontURL,
-              success: ({ tempFilePath }) => {
-                fs.saveFile({
-                  tempFilePath,
-                  filePath,
-                  success: () => {
-                    loadFont(filePath, fontFamily);
-                  },
-                  fail: console.log
-                });
-              },
-              fail: console.log,
-              complete: console.log
-            });
-          };
-          const readFont = (fontFamily: string, fontURL: string) => {
-            console.log(fontFamily, fontURL)
-            const filePath = `${wx.env.USER_DATA_PATH}/${fontFamily}.ttf`
-            fs.access({
-              path: filePath,
-              success() {
-                // 本地已有，直接读取并加载
-                console.log('从本地加载字体');
-                loadFont(filePath, fontFamily);
-              },
-              fail() {
-                // 本地没有，下载后再加载
-                console.log('从网络下载字体');
-                downloadFont(fontURL, filePath, fontFamily);
-              }
-            });
-          };
-          const _fonts = fonts.list.map((font: TFont) => {
-            return {
-              family: font.name,
-              url: font.url,
-              name: font.name,
-              key: font.fontKey
-            }
-          });
-          const { family: fontFamily, url: fontURL } = _fonts[index];
-          readFont(fontFamily, fontURL);
-        }
-      });
-    };
-    wx.getStorage({
-      key: "user",
-      success(res) {
-        const { token, openid, base, perlogo, userinfo } = res.data;
-        setUser({ token, openid });
-        setUserInfo(userinfo);
-        setPerlogo(perlogo);
-        success();
-        // getUserInfo(success)
-      },
-      fail(e) {
-        wxLogin(success);
-      },
-      complete(e) {
-      }
+      };
+      loadNextFont(0);
     });
   },
-  tapMenu(e: any) {
-    const { index } = e.currentTarget?.dataset || { index: e };
-    const { templates, types } = this.data;
-    console.log(types, index);
-    const parentCategoryId = types[index].id;
-    this.setData({ selectIndex: index, selectCategory: parentCategoryId });
-    if (templates?.[parentCategoryId]?.total) return;
-    else {
-      selectTemplate({ parentCategoryId });
+
+  loadTemplates(reset = false) {
+    if (this.data.loading || (!reset && !this.data.hasMore)) {
+      return Promise.resolve();
     }
-  },
-  tabChanged(e: any) {
-    const index = e.detail.current;
-    this.setData({
-      selectIndex: index,
+    const page = reset ? 1 : this.data.page + 1;
+    this.setData({ loading: true });
+    return selectTemplate({
+      parentCategoryId: this.data.selectedParentCategoryId,
+      name: this.data.keyword,
+      page,
+      pageSize: this.data.pageSize,
+    }).then((result) => {
+      const list = reset ? result.list : this.data.templates.concat(result.list);
+      const unique = list.filter((template, index, all) =>
+        all.findIndex((item) => item.id === template.id) === index
+      );
+      this.setData({
+        templates: unique,
+        newTemplateRows: templateRows(unique.slice(1)),
+        total: result.total,
+        page,
+        hasMore: unique.length < result.total && result.list.length > 0,
+      });
+    }).catch(() => {
+      wx.showToast({ title: "模板加载失败", icon: "none" });
+    }).finally(() => {
+      this.setData({ loading: false });
     });
-    this.tapMenu(index);
   },
-  tapSelect(e: any) {
-    const { se, bg, item: template } = e.currentTarget.dataset;
-    console.log(se, bg);
+
+  inputSearch(e: WechatMiniprogram.Input) {
+    this.setData({ inputKeyword: e.detail.value });
+  },
+
+  confirmSearch() {
+    this.setData({ keyword: this.data.inputKeyword.trim() });
+    this.loadTemplates(true);
+  },
+
+  clearSearch() {
+    this.setData({ inputKeyword: "", keyword: "" });
+    this.loadTemplates(true);
+  },
+
+  tapMenu(e: WechatMiniprogram.TouchEvent) {
+    const parentCategoryId = Number(e.currentTarget.dataset.id || 0);
+    this.setData({ selectedParentCategoryId: parentCategoryId });
+    this.loadTemplates(true);
+  },
+
+  loadMore() {
+    this.loadTemplates(false);
+  },
+
+  tapSelect(e: WechatMiniprogram.TouchEvent) {
+    const template = e.currentTarget.dataset.item as TTemplate;
+    if (!template) return;
     wx.navigateTo({
-      url: `../show/show?se=${se}&&bg=${bg}`,
+      url: `../show/show?templateId=${template.id}&se=se-${template.id}`,
       routeType: "wx://zoom",
-      events: {
-        // 为指定事件添加一个监听器，获取被打开页面传送到当前页面的数据
-        dataFromInfo: function ({ data }: any) {
-        },
+      success(res) {
+        res.eventChannel.emit("dataFromIndex", { template });
       },
-      success: function (res) {
-        // 通过eventChannel向被打开页面传送数据
-        res.eventChannel.emit('dataFromIndex', { template })
-      },
-    })
+    });
   },
-})
+});

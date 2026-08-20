@@ -33,6 +33,7 @@ Component({
             });
         },
         detached() {
+            this._removeAudioCache(this.data.audioSrc);
             if ((this as any)._playInterval) {
                 clearInterval((this as any)._playInterval);
                 (this as any)._playInterval = null;
@@ -68,16 +69,22 @@ Component({
         },
 
         async _loadAudio(filePath: string, fileName: string) {
-            console.log(filePath, fileName)
             wx.showLoading({ title: '加载音频...' });
 
-            const savedPath = `${wx.env.USER_DATA_PATH}/audio_${Date.now()}.mp3`;
-            // wx.getFileSystemManager().saveFileSync(filePath, savedPath);
-            saveFileWithCleanup(filePath, savedPath);
+            const extension = fileName.split('.').pop()?.toLowerCase() || 'mp3';
+            const targetPath = `${wx.env.USER_DATA_PATH}/audio_${Date.now()}.${extension}`;
+            let savedPath: string;
+            try {
+                savedPath = await saveFileWithCleanup(filePath, targetPath);
+            } catch (_) {
+                wx.hideLoading();
+                this.setData({ errorMsg: '音频保存失败，请清理缓存后重试' });
+                return;
+            }
 
             // 使用 WebAudioContext.decodeAudioData 获取时长，真机上比 InnerAudioContext 可靠
             // buffer.duration 由解码后的采样数/采样率计算得出，不依赖原生播放器 metadata 解析
-            const audioCtx = wx.createWebAudioContext();
+            const audioCtx = (wx as any).createWebAudioContext();
             const fs = wx.getFileSystemManager();
 
             fs.readFile({
@@ -141,14 +148,14 @@ Component({
         },
 
         _analyzeWaveform(filePath: string) {
-            const audioCtx = wx.createWebAudioContext();
+            const audioCtx = (wx as any).createWebAudioContext();
             const fs = wx.getFileSystemManager();
 
             fs.readFile({
                 filePath,
                 success: (res: any) => {
                     audioCtx.decodeAudioData(res.data, (buffer: any) => {
-                        this._audioBuffer = buffer;
+                        (this as any)._audioBuffer = buffer;
                         const peaks = this._extractPeaks(buffer);
                         this.setData({ waveformData: peaks });
                         this._drawWaveform();
@@ -231,7 +238,7 @@ Component({
                         const timeAtBar = (i / waveformData.length) * audioDuration;
                         const inRange = timeAtBar >= startTime && timeAtBar <= endTime;
 
-                        ctx.fillStyle = inRange ? '#3b82f6' : '#94a3b8';
+                        ctx.fillStyle = inRange ? '#b53b2e' : '#929287';
                         ctx.fillRect(x + 1, y, barWidth - 2, barHeight);
                     }
                 });
@@ -362,7 +369,7 @@ Component({
         confirmCut() {
             this.stopAudio();
 
-            if (!this._audioBuffer) {
+            if (!(this as any)._audioBuffer) {
                 this.setData({ errorMsg: '请先上传音频' });
                 return;
             }
@@ -377,14 +384,14 @@ Component({
             wx.showLoading({ title: '裁剪处理中...' });
 
             try {
-                const buffer = this._audioBuffer;
+                const buffer = (this as any)._audioBuffer;
                 const sampleRate = buffer.sampleRate;
                 const channels = buffer.numberOfChannels;
                 const startSample = Math.floor(startTime * sampleRate);
                 const endSample = Math.floor(endTime * sampleRate);
                 const newLength = endSample - startSample;
 
-                const audioCtx = wx.createWebAudioContext();
+                const audioCtx = (wx as any).createWebAudioContext();
                 const newBuffer = audioCtx.createBuffer(channels, newLength, sampleRate);
 
                 for (let ch = 0; ch < channels; ch++) {
@@ -405,7 +412,7 @@ Component({
                     success: () => {
                         wx.hideLoading();
                         this.setData({ isCropping: false });
-                        this._croppedSrc = tempFilePath;
+                        (this as any)._croppedSrc = tempFilePath;
 
                         this.triggerEvent('confirm', {
                             tempFilePath,
@@ -488,6 +495,7 @@ Component({
 
         _resetState() {
             this.stopAudio();
+            this._removeAudioCache(this.data.audioSrc);
             (this as any)._audioBuffer = null;
             (this as any)._croppedSrc = null;
             this.setData({
@@ -508,6 +516,11 @@ Component({
             });
         },
 
+        _removeAudioCache(filePath: string) {
+            if (!filePath || !filePath.startsWith(`${wx.env.USER_DATA_PATH}/audio_`)) return;
+            wx.getFileSystemManager().unlink({ filePath, fail: () => { } });
+        },
+
         reupload() {
             this._resetState();
             this.chooseAudio();
@@ -521,4 +534,3 @@ Component({
         },
     },
 });
-

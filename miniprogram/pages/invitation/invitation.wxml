@@ -1,47 +1,72 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <tab-bar selected="{{1}}"/>
-  <navigation-bar bind:bindMenu="bindMenu">
-  </navigation-bar>
-  <view class="contain">
-    <view class="scroll">
-      <scroll-view class="invitations" scroll-y show-scrollbar="{{false}}" type="list"
-        scroll-behavior="smooth" scroll-with-animation="true"
-        scroll-into-view="{{into}}" scroll-into-view-alignment="center">
-        <text id="{{'A'+item.id}}" wx:for="{{types}}" wx:key="id" bind:tap="tapMenu" 
-        data-item="{{item}}" data-index="{{index}}"
-        class="{{selectIndex===index?'active':''}}">{{item}}</text>
-        <view class="now">
-          <block wx:if="{{invitations.length}}">
-            <view class="invitation" wx:for="{{invitations}}" wx:key="" wx:for-item="invitation">
-              <text>{{invitation.guestName}}</text>
-              <view>
-                <text class="content">{{invitation.blessing}}</text>
-                <text class="date">{{invitation.date}}</text>
-              </view>
+  <tab-bar selected="{{1}}" />
+  <navigation-bar title="我的应邀" title-align="left"></navigation-bar>
+  <image class="paper-texture" src="/assets/illustrations/paper-xuan.webp" mode="scaleToFill" />
+  <view class="page-shell">
+    <view class="summary-panel">
+      <view data-filter="current" bind:tap="tapFilter">
+        <text>待回复</text>
+        <text class="summary-number">{{pendingCount}}</text>
+      </view>
+      <view class="{{activeFilter === 'current' ? 'active' : ''}}" data-filter="current" bind:tap="tapFilter">
+        <text>即将到来</text>
+        <text class="summary-number">{{currentCount}}</text>
+      </view>
+      <view class="{{activeFilter === 'history' ? 'active' : ''}}" data-filter="history" bind:tap="tapFilter">
+        <text>已完成</text>
+        <text class="summary-number">{{historyCount}}</text>
+      </view>
+    </view>
+
+    <scroll-view class="response-scroll" scroll-y show-scrollbar="{{false}}" type="list">
+      <view wx:if="{{visibleInvitations.length}}" class="timeline">
+        <view class="timeline-item {{index === 0 ? 'featured-item' : 'compact-item'}}" wx:for="{{visibleInvitations}}" wx:key="id"
+          data-id="{{item.invitationId}}" bind:tap="tapItem">
+          <view wx:if="{{index === 0}}" class="featured-response-card">
+            <image class="decorative-image invitation-courtyard"
+              src="/assets/illustrations/courtyard-gathering-v2.jpg" mode="aspectFill" />
+            <image class="decorative-image invitation-fold fold-top" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+            <image class="decorative-image invitation-fold fold-bottom" src="/assets/illustrations/paper-fold.png" mode="aspectFit" />
+            <image class="decorative-image invitation-seal" src="/assets/illustrations/cinnabar-seal.png" mode="aspectFit" />
+            <view class="featured-card-content">
+              <text class="latest-label">最近一场</text>
+              <text class="featured-date">{{item.eventDateText}}</text>
+              <text class="song-title featured-name">{{item.invitationTitle}}</text>
+              <view class="featured-meta"><text class="iconfont icon-dingweixiao"></text><text>{{item.eventAddressText}}</text></view>
+              <view class="featured-meta"><text class="iconfont icon-MP_"></text><text>{{item.eventTimeText}}</text></view>
+              <text wx:if="{{item.responseType === 1}}" class="status confirmed">已应邀 · {{item.guestCount || 1}}人</text>
+              <text wx:elif="{{item.responseType === 2}}" class="status declined">已婉拒</text>
+              <text wx:else class="status pending">待确认</text>
             </view>
-          </block>
-          <view wx:else>
-            <text>暂无应邀...</text>
+            <view class="featured-card-actions">
+              <text>查看详情 ›</text>
+              <text>{{item.responseType === 3 ? '立即回复' : '修改回复'}}</text>
+            </view>
+          </view>
+          <view wx:else class="compact-response-card">
+            <view class="timeline-node"></view>
+            <view class="compact-date"><text>{{item.eventDateText}}</text></view>
+            <view class="compact-copy">
+              <text class="song-title compact-name">{{item.invitationTitle}}</text>
+              <text class="compact-address">{{item.eventAddressText}}</text>
+            </view>
+            <text wx:if="{{item.responseType === 1}}" class="status confirmed">已完成</text>
+            <text wx:elif="{{item.responseType === 2}}" class="status declined">已婉拒</text>
+            <text wx:else class="status pending">待确认</text>
+            <text class="compact-arrow">›</text>
           </view>
         </view>
-        <!--
-        <view class="sep">
-          <text>历史应邀</text>
+      </view>
+      <view wx:elif="{{!loading}}" class="empty-state">
+        <image class="decorative-image empty-courtyard"
+          src="/assets/illustrations/empty-invitations.jpg" mode="aspectFill" />
+        <view class="empty-copy">
+          <text class="song-title">{{activeFilter === 'current' ? '近期暂无赴约' : '暂无历史记录'}}</text>
+          <text>收到并回复的邀请，会在这里按时间呈现</text>
         </view>
-        <view class="history">
-          <view class="invitation" wx:for="{{invitations}}" wx:key="" wx:for-item="invitation">
-            <text>{{invitation.name}}</text>
-            <view>
-              <text class="content">{{invitation.content}}</text>
-              <text class="date">{{invitation.date}}</text>
-            </view>
-          </view>
-        </view>
-        -->
-      </scroll-view>
-    </view>
-    <view class="ad">
-      <image src="http://witknow.net/witInvite/ad2.jpg" mode="aspectFit" lazy-load="{{false}}"/>
-    </view>
-  </view> 
+      </view>
+      <view wx:else class="empty-state"><text>正在整理应邀记录…</text></view>
+      <view class="tabbar-spacer"></view>
+    </scroll-view>
+  </view>
 </page-meta>

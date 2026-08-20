@@ -1,41 +1,109 @@
 <page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
-  <navigation-bar bind:bindMenu="bindMenu">
-    <text slot="left" class="iconfont icon-shouye2" bind:tap="tapHome" />
+  <navigation-bar title="收到邀请">
+    <text slot="left" class="home-link iconfont icon-shouye2" bind:tap="tapHome" />
   </navigation-bar>
+
   <view class="contain">
-    <text wx:if="{{invitation.backgroundMusic}}" class="music iconfont icon-yinle {{play?'play':''}}" 
-        bind:tap="tapPlay"/>
-    <scroll-view scroll-y scrollbar="false" type="list">
-        <snapshot id="snapshot">
-            <view class="templateBG" bind:tap="">
-                <image src="{{_CDN + invitation.coverImage}}" mode="widthFix"  />
+    <scroll-view class="invitation-scroll" scroll-y show-scrollbar="{{false}}">
+      <view wx:if="{{pageState === 'loading'}}" class="loading-state">
+        <view class="state-seal loading-seal"></view>
+        <text class="song-title">正在展开请柬</text>
+        <text>请稍候，正在准备邀请内容…</text>
+      </view>
+      <view wx:elif="{{pageState === 'invalid' || pageState === 'error'}}" class="page-state">
+        <text class="state-kicker">INVITATION</text>
+        <view class="state-seal"><text>{{pageState === 'invalid' ? '失' : '候'}}</text></view>
+        <text class="song-title">{{pageState === 'invalid' ? '邀请链接无效' : '暂时无法打开'}}</text>
+        <text class="state-message">{{errorMessage}}</text>
+        <view class="state-actions">
+          <button wx:if="{{pageState === 'error'}}" class="state-primary" bind:tap="tapRetry">重新加载</button>
+          <button class="state-secondary" bind:tap="tapHome">返回首页</button>
+        </view>
+      </view>
+      <view wx:else class="invitation-sheet">
+        <view class="invitation-summary">
+          <text class="summary-mark">INVITATION</text>
+          <text class="song-title">{{invitation.title || invitation.eventName || '一封邀请函'}}</text>
+          <text>{{invitation.hostName ? invitation.hostName + ' 敬邀' : '诚挚邀请您莅临'}}</text>
+        </view>
+
+        <view class="preview-stage">
+          <text wx:if="{{invitation.backgroundMusic}}"
+            class="music iconfont icon-yinle {{play ? 'play' : ''}}" bind:tap="tapPlay" />
+          <view class="templateBG">
+            <image src="{{backgroundUrl}}" mode="widthFix" />
+            <view wx:for="{{elements}}" wx:key="index" wx:for-item="element"
+              wx:if="{{element.visible !== false}}" style="{{element.displayStyle}}">
+              <image wx:if="{{element.type === 'image'}}" src="{{element.displayName}}" mode="aspectFill" />
+              <text wx:else>{{element.name}}</text>
             </view>
-        </snapshot>
+          </view>
+        </view>
+
+        <view class="detail-panel paper-panel">
+          <text class="panel-kicker">相聚之期</text>
+          <text class="song-title event-name">{{invitation.eventName || invitation.title || '诚邀相聚'}}</text>
+          <text wx:if="{{eventContent}}" class="event-content">{{eventContent}}</text>
+          <view class="detail-row">
+            <text class="detail-label">日期</text>
+            <view>
+              <text>{{eventDateText}} {{invitation.eventTime || ''}}</text>
+              <text wx:if="{{invitation.lunarDate}}" class="detail-note">农历 {{invitation.lunarDate}}</text>
+            </view>
+          </view>
+          <view class="detail-row address-row">
+            <text class="detail-label">地点</text>
+            <view>
+              <text>{{invitation.eventAddress || '地点待定'}}</text>
+              <view wx:if="{{invitation.eventAddress}}" class="address-actions">
+                <text bind:tap="tapCopyAddress">复制地址</text>
+                <text bind:tap="tapLocation">地图导航</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="service-note">
+          <text class="song-title">赴约提示</text>
+          <text>如需住宿或接送，可在回复中告知邀请方；具体安排请以邀请方通知为准。</text>
+          <text wx:if="{{response && response.seatInfo}}">您的席位：{{response.seatInfo}}</text>
+        </view>
+
+        <view class="dock-spacer"></view>
+      </view>
     </scroll-view>
-    <view class="footer">
-        <view>
-            <text id="reply" bind:tap="tapReply">{{response?'已回复':'回复'}}</text>
-        </view>
-        <view>
-            <text id="favor" bind:tap="tapFavorite" 
-              style="color:{{favorite?'var(--color-error)':'var(--color-abf2)'}}">{{favorite?'取消收藏':'收藏'}}</text>
-        </view>
+
+    <view wx:if="{{pageState === 'ready' && invitation.id && invitation.status === 1}}" class="action-dock">
+      <view class="action primary">
+        <text bind:tap="tapReply">{{response ? '修改回复' : '回复邀请'}}</text>
+      </view>
+      <button class="action share" open-type="share">转发</button>
+      <view class="action secondary">
+        <text bind:tap="tapFavorite">{{favorite ? '取消收藏' : '收藏'}}</text>
+      </view>
     </view>
-  </view> 
-  <half-layout id="the-response" back="{{!1}}" bind:close="layoutClose" background="var(--color-absbg)">   
+    <view wx:elif="{{pageState === 'ready' && invitation.id}}" class="closed-dock">
+      <text>{{invitation.status === 0 ? '此邀请尚未发布' : '此邀请已结束'}}</text>
+    </view>
+  </view>
+
+  <half-layout id="the-response" back="{{!1}}" background="var(--paper-light)">
     <view slot="header" class="edit-header">
-        <view class="card-header">
-            <text class="title">回复</text>
-            <text class="iconfont icon-guanbijiantou close" bind:tap="onCancel" />
+      <view class="card-header">
+        <view class="card-title-copy">
+          <text class="card-kicker">RSVP</text>
+          <text class="song-title title">回复邀请</text>
         </view>
+        <text class="iconfont icon-guanbijiantou close" bind:tap="onCancel" />
+      </view>
     </view>
     <view slot="content" class="edit-content">
-        <responseForm id="the-Form" bind:trigger="triggerSubmit"
-            theInvitation="{{invitation}}" theResponse="{{response}}" />
+      <responseForm id="the-Form" bind:trigger="triggerSubmit"
+        theInvitation="{{invitation}}" theResponse="{{response}}" />
     </view>
     <view slot="footer" class="card-footer">
       <text class="btn cancel" bind:tap="onCancel">取消</text>
-      <text class="btn submit" bind:tap="onSubmit">提交</text>
+      <text class="btn submit" bind:tap="onSubmit">提交回复</text>
     </view>
   </half-layout>
 </page-meta>

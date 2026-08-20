@@ -1,5 +1,4 @@
-import { TOption, _request, reflectEntity } from "../utils/util";
-import { _Server, setPerlogo } from "./global";
+import { _request, reflectEntity } from "../utils/util";
 import { getUserHeader } from "./userSlice";
 
 export type TInvitation = {
@@ -58,6 +57,7 @@ export const InvitationSlice = {
       const app = getApp(), { id } = invitation,
         invitations = app.proxyData.invitation,
         index = invitations.findIndex((invitation: TInvitation) => invitation.id === id);
+      if (index < 0) return;
       invitations.splice(index, 1);
       app.proxyData.invitation = [...invitations];
     },
@@ -68,18 +68,20 @@ export const {
   setInvitation, updateInvitation, removeInvitation,
 } = InvitationSlice.reducers;
 
-export const queryInvitation = () => getApp().invitation;
+export const queryInvitation = () => getApp().globalData.invitation;
 
 /***
  * 获取邀请函
  */
-export const selectInvitation = () =>
+export const selectInvitation = ({ page = 1, pageSize = 30 } = {}) =>
   _request({
-    url: `/witinvite/invitation/get`, header: getUserHeader(),
+    url: `/witinvite/invitation/getList`, header: getUserHeader(),
+    query: { page, pageSize },
   }).then((r: any) => {
     if (r.result >= 0) {
-      setInvitation(r.message);
-      return Promise.resolve();
+      const list = Array.isArray(r.message) ? r.message : [];
+      setInvitation(list);
+      return Promise.resolve({ list, total: Number(r.total || list.length) });
     } else {
       return Promise.reject(r);
     }
@@ -108,9 +110,8 @@ export const createInvitation = (invitation: TInvitation) =>
 export const selectInvitationInfo = (id: number) =>
   _request({
     url: `/witinvite/invitation/getInfo`, header: getUserHeader(),
-    params: { id },
+    query: { id },
   }).then((r: any) => {
-    console.log(r);
     if (r.result >= 0) {
       return Promise.resolve(r.message);
     } else {

@@ -2,7 +2,7 @@
     <view class="content_container" catchtap="handleContentAreaTap">
         <view class="options_container" >
             <view bindtap="handleCancelTap">取消</view>
-            <view bindtap="handleConfirmTap" style="color: #0BC15F;">确定</view>
+            <view class="confirm_action" bindtap="handleConfirmTap">确定</view>
         </view>
 
         <picker-view class="picker_view" value="{{ valueArray }}" immediate-change="{{ true }}" catchtap="handleContentAreaTap" bindchange="handlePickerViewChange" indicator-class="indicator">

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200" fill="none">
+  <defs>
+    <radialGradient id="petal" cx="0" cy="0" r="1" gradientTransform="translate(0 0) rotate(90) scale(32)">
+      <stop stop-color="#FBF8F1"/>
+      <stop offset="1" stop-color="#EBE3D4"/>
+    </radialGradient>
+    <symbol id="flower" viewBox="-58 -58 116 116">
+      <ellipse cx="0" cy="-27" rx="22" ry="29" fill="url(#petal)" stroke="#C39445" stroke-opacity="0.55" stroke-width="2"/>
+      <ellipse cx="26" cy="-8" rx="22" ry="29" transform="rotate(72 26 -8)" fill="url(#petal)" stroke="#C39445" stroke-opacity="0.55" stroke-width="2"/>
+      <ellipse cx="16" cy="23" rx="22" ry="29" transform="rotate(144 16 23)" fill="url(#petal)" stroke="#C39445" stroke-opacity="0.55" stroke-width="2"/>
+      <ellipse cx="-16" cy="23" rx="22" ry="29" transform="rotate(-144 -16 23)" fill="url(#petal)" stroke="#C39445" stroke-opacity="0.55" stroke-width="2"/>
+      <ellipse cx="-26" cy="-8" rx="22" ry="29" transform="rotate(-72 -26 -8)" fill="url(#petal)" stroke="#C39445" stroke-opacity="0.55" stroke-width="2"/>
+      <circle r="9" fill="#B53B2E"/>
+      <g stroke="#C39445" stroke-width="2" stroke-linecap="round">
+        <path d="M0 -3L0 -24M3 -2L17 -17M3 1L23 7M1 3L10 25M-2 3L-12 24M-3 0L-23 7M-3 -2L-17 -18"/>
+      </g>
+      <g fill="#C39445">
+        <circle cy="-25" r="3"/><circle cx="18" cy="-18" r="3"/><circle cx="24" cy="7" r="3"/><circle cx="10" cy="26" r="3"/><circle cx="-12" cy="25" r="3"/><circle cx="-24" cy="7" r="3"/><circle cx="-18" cy="-19" r="3"/>
+      </g>
+    </symbol>
+    <linearGradient id="branch" x1="110" y1="1100" x2="685" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#213B38"/>
+      <stop offset="1" stop-color="#2F4A46" stop-opacity="0.78"/>
+    </linearGradient>
+  </defs>
+  <path d="M92 1138C175 990 228 873 315 744C405 611 504 486 612 332C660 264 684 181 698 75" stroke="url(#branch)" stroke-width="19" stroke-linecap="round"/>
+  <path d="M221 895C171 829 145 770 140 704M321 733C246 698 206 653 180 597M430 580C501 537 552 494 593 436M539 436C482 379 459 323 452 258M624 294C581 241 568 194 572 153" stroke="#2F4A46" stroke-width="11" stroke-linecap="round"/>
+  <path d="M139 705C105 677 77 661 42 655C67 691 99 708 139 705ZM181 597C139 566 103 556 63 561C99 590 137 603 181 597ZM452 258C413 222 374 210 332 217C368 251 410 265 452 258ZM592 436C636 398 679 386 727 394C684 428 639 444 592 436ZM572 153C537 119 522 83 525 45C558 74 577 110 572 153Z" fill="#7F8677" fill-opacity="0.62"/>
+  <use href="#flower" x="126" y="820" width="150" height="150"/>
+  <use href="#flower" x="246" y="643" width="132" height="132"/>
+  <use href="#flower" x="381" y="507" width="154" height="154"/>
+  <use href="#flower" x="538" y="333" width="128" height="128"/>
+  <use href="#flower" x="617" y="154" width="142" height="142"/>
+  <g fill="#F5F0E6" stroke="#B53B2E" stroke-width="4">
+    <circle cx="150" cy="696" r="19"/><circle cx="194" cy="614" r="15"/><circle cx="457" cy="269" r="17"/><circle cx="590" cy="157" r="15"/>
+  </g>
+</svg>

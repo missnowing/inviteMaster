@@ -384,3 +384,79 @@
         }
     }
 }
+
+.materialContain {
+    color: var(--ink);
+    background-color: var(--paper-light);
+
+    .materialCategorys {
+        height: 72rpx;
+        justify-content: flex-start;
+        gap: 38rpx;
+        padding: 0 18rpx;
+        border-bottom: 1px solid var(--hairline);
+        border-radius: 0;
+
+        &>text {
+            height: 72rpx;
+            display: flex;
+            align-items: center;
+            color: var(--ink-soft);
+            font-size: 23rpx;
+        }
+
+        &>text.active {
+            color: var(--cinnabar);
+            font-weight: 600;
+        }
+
+        &>text.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 4rpx;
+            background-color: var(--cinnabar);
+        }
+    }
+
+    scroll-view .scrollContain {
+        padding: 10rpx;
+        justify-content: flex-start;
+    }
+
+    .material {
+        overflow: hidden;
+        background-color: var(--paper);
+        border: 1px solid var(--hairline);
+        border-radius: 8rpx;
+    }
+
+    .material .preview {
+        color: var(--ink);
+        background-color: var(--paper);
+        border-radius: 8rpx;
+    }
+
+    .material .preview .name {
+        color: var(--ink-soft);
+    }
+
+    .material.add {
+        color: var(--cinnabar);
+        border: 1px dashed rgba(181, 59, 46, .48);
+    }
+
+    #the-cut,
+    .the-cut {
+        background-color: rgba(32, 33, 30, .46);
+    }
+
+    .cutContain {
+        overflow: hidden;
+        background-color: var(--paper-light);
+        border-radius: 24rpx 24rpx 0 0;
+        box-shadow: 0 -16rpx 36rpx rgba(32, 33, 30, .14);
+    }
+}

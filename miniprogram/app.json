@@ -4,6 +4,8 @@
     "pages/invitation/invitation",
     "pages/mine/mine",
     "pages/mine/info/info",
+    "pages/mine/favorites/favorites",
+    "pages/mine/materials/materials",
     "pages/show/show",
     "pages/show/create/create",
     "pages/receive/receive"
@@ -18,33 +20,31 @@
   },
   "tabBar": {
     "custom": true,
-    "color": "#7A7E83",
-    "selectedColor": "#3cc51f",
+    "color": "#5f625b",
+    "selectedColor": "#b53b2e",
     "borderStyle": "black",
-    "backgroundColor": "#ffffff",
+    "backgroundColor": "#fbf8f1",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "主页1"
+        "text": "首页"
       },
       {
         "pagePath": "pages/invitation/invitation",
-        "text": "应邀1"
+        "text": "应邀"
       },
       {
         "pagePath": "pages/mine/mine",
-        "text": "我的1"
+        "text": "我的"
       }
     ]
   },
   "window": {
-    "navigationBarTextStyle": "@navTxtStyle",
+    "navigationBarTextStyle": "black",
     "navigationStyle": "custom",
-    "navigationBarBackgroundColor": "@navBgColor",
-    "backgroundColor": "#2f0b00"
+    "navigationBarBackgroundColor": "#f5f0e6",
+    "backgroundColor": "#f5f0e6"
   },
-  "darkmode": true,
-  "themeLocation": "theme.json",
   "style": "v2",
   "renderer": "skyline",
   "rendererOptions": {

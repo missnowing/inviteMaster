@@ -1,0 +1,6 @@
+<page-meta root-font-size="{{style.fontsize}}" style="display: flex;">
+  <navigation-bar back="{{true}}" title="素材库"></navigation-bar>
+  <view class="materials-shell">
+    <material />
+  </view>
+</page-meta>

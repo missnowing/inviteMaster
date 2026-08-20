@@ -2,8 +2,7 @@
     "usingComponents": {
       "navigation-bar": "/components/navigation-bar",
       "tab-bar": "/components/tab-bar/tab-bar",
-      "half-layout": "/components/half-layout/half-layout",
-      "material": "/components/material/material"
+      "half-layout": "/components/half-layout/half-layout"
     },
     "disableScroll": true,
     "navigationStyle": "custom",

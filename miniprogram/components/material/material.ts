@@ -33,6 +33,7 @@ Component({
                 if (!newVal) return;
                 const _materialCategorys = getApp().globalData.materialCategory,
                     materialCategorys = _materialCategorys.filter((cate: TMaterialCategory) => cate.code === newVal)
+                if (!materialCategorys.length) return;
                 this.setData({
                     materialCategorys,
                     material: { ...this.data.material, category: materialCategorys[0].code }
@@ -43,22 +44,40 @@ Component({
     lifetimes: {
         async attached() {
             const app = getApp();
-            app.setProxy("material", {
+            (this as any)._unsubscribeMaterial = app.setProxy("material", {
                 set: (target: any, key: string, value: IMaterial, receiver: any) => {
                     this.setData({
                         materials: { ...value }
                     })
                 }
             })
-            let materialCategorys = queryMaterialCategory(),
-                materials = queryMaterial(), { select } = this.data;
-            if (!materialCategorys.length) {
-                const _materialCategorys = await selectMaterialCategory()
-                materialCategorys = _materialCategorys;
-                selectMaterial()
+            let materialCategorys = queryMaterialCategory(), materials = queryMaterial();
+            try {
+                if (!materialCategorys.length) {
+                    materialCategorys = await selectMaterialCategory();
+                }
+                if (!materials.load) {
+                    await selectMaterial();
+                }
+            } catch (_) {
+                wx.showToast({ title: "素材加载失败", icon: "none" });
             }
+            materials = queryMaterial();
             if (materials.load) this.setData({ materials })
-            this.setData({ materialCategorys });
+            const { select, material } = this.data;
+            const visibleCategories = select
+                ? materialCategorys.filter((category: TMaterialCategory) => category.code === select)
+                : materialCategorys;
+            this.setData({
+                materialCategorys: visibleCategories,
+                material: visibleCategories[0]
+                    ? { ...material, category: visibleCategories[0].code }
+                    : material,
+            });
+        },
+        detached() {
+            (this as any)._unsubscribeMaterial?.();
+            (this as any)._unsubscribeMaterial = null;
         },
     },
     methods: {
@@ -69,6 +88,7 @@ Component({
         tapChanged(e: WechatMiniprogram.TouchEvent) {
             const { current: selectSwiper } = e.detail,
                 { material } = this.data, { materialCategorys } = this.data;
+            if (!materialCategorys[+selectSwiper]) return;
             this.setData({ selectSwiper, material: { ...material, category: materialCategorys[+selectSwiper].code } });
         },
         tapPreviewMaterial(e: WechatMiniprogram.TouchEvent) {
@@ -106,8 +126,6 @@ Component({
         },
         tapMaterialUpload() {
             const { material } = this.data;
-            console.log(material);
-
             switch (material.category) {
                 case 'font':
                     wx.chooseMessageFile({
@@ -239,9 +257,8 @@ Component({
                         url: "",
                     }
                 });
-            }).catch((e: any) => {
+            }).catch(() => {
                 wx.showToast({ title: "上传失败", icon: "error" });
-                console.error(e);
             }).finally(() => {
                 wx.hideLoading();
             });
@@ -284,13 +301,11 @@ Component({
                         url: "",
                     }
                 });
-                const fs = wx.getFileSystemManager();
-                fs.unlink({ filePath: tempFilePath, complete(e) { console.log(e) } });
-            }).catch((e: any) => {
+            }).catch(() => {
                 wx.showToast({ title: "上传失败", icon: "error" });
-                console.error(e);
             }).finally(() => {
                 wx.hideLoading();
+                wx.getFileSystemManager().unlink({ filePath: tempFilePath, fail: () => { } });
             });
         },
         onAudioCutCancel() {

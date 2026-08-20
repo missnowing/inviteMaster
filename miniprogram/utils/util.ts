@@ -1,9 +1,60 @@
-import { wxLogin } from '../store/global';
 import FormData from './formdata';
-import MD5 from './lib/MD5';
 import instance from './instance';
-export const _Server = "https://witknow.com/";
+export const _Server = "https://witknow.com";
 export const _CDN = "https://cdniwallet.apisesame.com/";
+
+type AuthCredentials = {
+  token: string;
+  openid: string;
+};
+
+export type RequestError = {
+  status: number;
+  message: string;
+  detail?: unknown;
+  url?: string;
+};
+
+let authRefreshHandler: null | (() => Promise<AuthCredentials>) = null;
+let activeAuthRefresh: Promise<AuthCredentials> | null = null;
+let activeRequestLoadings = 0;
+
+export const setAuthRefreshHandler = (handler: () => Promise<AuthCredentials>) => {
+  authRefreshHandler = handler;
+};
+
+const refreshAuth = (): Promise<AuthCredentials> => {
+  if (!authRefreshHandler) {
+    return Promise.reject({
+      status: 401,
+      message: "登录刷新器尚未初始化",
+    } as RequestError);
+  }
+
+  if (!activeAuthRefresh) {
+    activeAuthRefresh = authRefreshHandler().finally(() => {
+      activeAuthRefresh = null;
+    });
+  }
+
+  return activeAuthRefresh;
+};
+
+const showRequestLoading = (title: string, mask: boolean) => {
+  activeRequestLoadings += 1;
+  if (activeRequestLoadings === 1) {
+    instance.showLoading({ title, mask });
+  }
+};
+
+const hideRequestLoading = () => {
+  if (activeRequestLoadings > 0) {
+    activeRequestLoadings -= 1;
+  }
+  if (activeRequestLoadings === 0) {
+    wx.hideLoading();
+  }
+};
 
 export const formatTime = (date: Date) => {
   const year = date.getFullYear()
@@ -27,7 +78,6 @@ const formatNumber = (n: number) => {
 
 //x-www-form-urlencoded
 export const formatUrlencoded: object = (urlencoded: string) => {
-  console.log(urlencoded);
   const splits = urlencoded.split("&");
   if (splits.length <= 1) {
     const [key, value] = urlencoded.split("=");
@@ -48,10 +98,9 @@ export type TOption = {
   server?: string,
   method?: | 'OPTIONS' | 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'CONNECT',
   url?: string,
-  params?: {
-    [key: string]: string | number
-  },
-  header?: object,
+  params?: Record<string, any>,
+  query?: Record<string, any>,
+  header?: Record<string, any>,
   timeout?: number,
   delay?: number,
   loadingTip?: string,
@@ -61,19 +110,21 @@ export type TOption = {
   failModel?: boolean,
   contentType?: string,
   formData?: boolean,
+  skipAuthRefresh?: boolean,
+  maxAuthRetries?: number,
   then_?: Function,
   catch_?: Function,
 };
 export const reflectEntity = <T>(entity: T): T => {
-  for (let key in entity) {
+  const result = { ...entity };
+  for (let key in result) {
     if (key.search(/^_/) >= 0) {
-      delete entity[key];
+      delete result[key];
     }
   }
-  return entity;
+  return result;
 }
-export const _request = (opt: TOption): Promise<Object> => {
-  // console.log(opt);
+export const _request = <T = any>(opt: TOption): Promise<T> => {
   const option: TOption = {
     ...{
       server: _Server,
@@ -88,78 +139,162 @@ export const _request = (opt: TOption): Promise<Object> => {
       failModel: !1,
       contentType: "application/json",
       formData: !0,
+      skipAuthRefresh: !1,
+      maxAuthRetries: 2,
       then_: () => { },
       catch_: () => { },
     }, ...opt
   };
-  let formData = new FormData();
-  const { server, method, url, params, header, timeout, delay, mask, loadingTip } = option;
-  console.log(option, option.formData);
+  const formData = new FormData();
+  const { server, method, url, params, timeout, delay, mask, loadingTip } = option;
+  const headers: Record<string, any> = { ...(option.header || {}) };
+  const query = option.query || {};
+  const queryString = Object.keys(query)
+    .filter((key) => query[key] !== undefined && query[key] !== null && query[key] !== "")
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(String(query[key]))}`)
+    .join("&");
+  const requestUrl = `${String(server).replace(/\/$/, "")}/${String(url || "").replace(/^\//, "")}${queryString ? `?${queryString}` : ""}`;
   for (let k in params) {
     formData.append(k, params[k]);
   }
   const data = formData.getData();
 
-  let max = 3;
-  return new Promise<Object>((resolve, reject) => {
-    let st: number;
-    if (option.loading) st = setTimeout(() => instance.showLoading({ title: loadingTip as string, mask }), delay);
-    console.log("params:", params, option.formData);
+  let authRetries = 0;
+  return new Promise<T>((resolve, reject) => {
+    let loadingTimer: number | undefined;
+    let loadingShown = false;
+    let settled = false;
+
+    const beginLoading = () => {
+      if (!option.loading || loadingTimer || loadingShown) return;
+      loadingTimer = setTimeout(() => {
+        loadingTimer = undefined;
+        loadingShown = true;
+        showRequestLoading(loadingTip as string, !!mask);
+      }, delay) as unknown as number;
+    };
+
+    const endLoading = () => {
+      if (loadingTimer) {
+        clearTimeout(loadingTimer);
+        loadingTimer = undefined;
+      }
+      if (loadingShown) {
+        loadingShown = false;
+        hideRequestLoading();
+      }
+    };
+
+    const resolveOnce = (value: T) => {
+      if (settled) return;
+      settled = true;
+      endLoading();
+      resolve(value);
+    };
+
+    const rejectOnce = (error: RequestError) => {
+      if (settled) return;
+      settled = true;
+      endLoading();
+      reject(error);
+    };
+
     const request = () => wx.request({
       method: method,
-      url: server + url,
-      // data: data.buffer,
+      url: requestUrl,
       data: option.formData ? data.buffer : params,
       timeout,
       header: {
-        ...header,
+        ...headers,
         'content-type': option.formData ? data.contentType : option.contentType,
         "url": url
       },
       success(res) {
-        if (res?.data) {
-          // console.log(res.data.code);
-          if (res.data.code === 400) {
-            console.log("wxLogin", url);
-            wxLogin(({ token, openid }) => {
-              header.token = token;
-              header.openid = openid;
-              max--;
-              max > 0 && request();
-            })
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          rejectOnce({
+            status: res.statusCode,
+            message: `请求失败（HTTP ${res.statusCode}）`,
+            detail: res.data,
+            url: requestUrl,
+          });
+          return;
+        }
+
+        const responseData = res.data as any;
+        if (responseData && responseData.code === 400 && !option.skipAuthRefresh) {
+          if (authRetries >= (option.maxAuthRetries || 0)) {
+            rejectOnce({
+              status: 401,
+              message: "登录状态已失效，请重新进入小程序",
+              detail: responseData,
+              url: requestUrl,
+            });
             return;
           }
-          resolve(res.data);
-        } else reject({ status: 501, message: res });
+
+          authRetries += 1;
+          refreshAuth().then(({ token, openid }) => {
+            headers.token = token;
+            headers.openid = openid;
+            request();
+          }).catch((error: RequestError) => {
+            rejectOnce({
+              status: error.status || 401,
+              message: error.message || "登录刷新失败",
+              detail: error,
+              url: requestUrl,
+            });
+          });
+          return;
+        }
+
+        if (responseData !== undefined && responseData !== null) {
+          resolveOnce(responseData as T);
+          return;
+        }
+
+        rejectOnce({
+          status: 502,
+          message: "服务返回了空响应",
+          detail: res,
+          url: requestUrl,
+        });
       },
       fail(err) {
-        console.log(err, url);
-        option.failModel && wx.showModal({
-          content: "网络异常！",
-          confirmText: "重试",
-          complete: (e) => {
-            const { cancel, confirm, errMsg } = e;
-            if (confirm) {
-              _request(opt).then(option.then_).catch(option.catch_);
-            } else if (cancel) {
-            }
-          }
-        })
-        option.throwCatch ? reject({ status: 401, message: err }) : instance.showToast({ title: "网络异常", icon: "error", duration: 2000 });
-        return;
-        if (err.errMsg.indexOf('request:fail timeout') >= 0) {
-          instance.showToast({ title: "网络超时，请重试", icon: "error", duration: 2000 });
-        } else if (err.errMsg.indexOf('request:fail') >= 0) {
-          // const net = await wx.getNetworkType().networkType === 'none';
-          instance.showToast({ title: "网络异常", icon: "error", duration: 2000 });
-        } else instance.showToast({ title: err.errMsg.toString(), icon: "error", duration: 2000 })
-      },
-      complete() {
-        st && delay && delay > 0 && clearTimeout(st);
-        // option.loading && setTimeout(() => wx.hideLoading(), 0);
-        option.loading && wx.hideLoading();
+        const isTimeout = err.errMsg.indexOf("timeout") >= 0;
+        const error: RequestError = {
+          status: isTimeout ? 408 : 0,
+          message: isTimeout ? "网络超时，请重试" : "网络异常，请检查网络连接",
+          detail: err,
+          url: requestUrl,
+        };
+
+        if (option.failModel) {
+          endLoading();
+          wx.showModal({
+            content: error.message,
+            confirmText: "重试",
+            success: (e) => {
+              if (e.confirm) {
+                beginLoading();
+                request();
+              } else {
+                rejectOnce(error);
+              }
+            },
+            fail: () => rejectOnce(error),
+          });
+          return;
+        }
+
+        if (!option.throwCatch) {
+          instance.showToast({ title: error.message, icon: "none", duration: 2000 });
+        }
+        rejectOnce(error);
       }
-    })
+    });
+
+    beginLoading();
     request();
   });
 }

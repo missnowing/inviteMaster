@@ -1,6 +1,4 @@
 import { _request } from "../utils/util";
-import { _Server } from "./global";
-import { ITempType } from "./temptype";
 import { getUserHeader } from "./userSlice";
 
 export type TTemplateStyle = {
@@ -11,6 +9,7 @@ export type TTemplateStyle = {
   sortOrder: number,      //排序
   status: number,         //状态：0隐藏 1显示
   date: string,
+  child?: TTemplateStyle[],
 };
 export type TTemplate = {
   id: number,
@@ -42,12 +41,28 @@ export type TTemplateCategory = {
   sortOrder: number,      //排序
   status: number,         //状态：0隐藏 1显示
   date: string,
+  child?: TTemplateCategory[],
+};
+export type TTemplateQuery = {
+  parentCategoryId?: number,
+  categoryId?: number,
+  styleId?: number,
+  name?: string,
+  page?: number,
+  pageSize?: number,
+};
+export type TTemplatePage = {
+  list: TTemplate[],
+  total: number,
+  page: number,
+  pageSize: number,
 };
 export type TTemplateData = {
   key: string | undefined,
   type: "text" | "textarea" | "image",
   name: string,
   style: string,
+  displayStyle?: string,
   visible: boolean,
 };
 export interface ITemplate {
@@ -71,6 +86,10 @@ export const TemplateSlice = {
       const app = getApp();
       app.proxyData.category = [...categorys];
     },
+    toTemplateStyle: (styles: TTemplateStyle[]) => {
+      const app = getApp();
+      app.proxyData.templateStyle = [...styles];
+    },
     toTemplate: ({ parentCategoryId, page, list, total }: any) => {
       const app = getApp(), template = app.globalData.template;
       template[parentCategoryId] = { list, page, parentCategoryId, total };
@@ -89,6 +108,7 @@ export const TemplateSlice = {
 
 export const {
   toTemplateCategory,
+  toTemplateStyle,
   toTemplate,
   toTemplateInfo,
 } = TemplateSlice.reducers;
@@ -115,22 +135,50 @@ export const selectTemplateCategory = () => {
   })
 }
 
+/**
+ * 获取模板风格
+ */
+export const selectTemplateStyle = () => {
+  return _request({
+    url: `/witinvite/template-style/get`, header: getUserHeader(),
+  }).then((r: any) => {
+    if (r.result >= 0) {
+      const list = Array.isArray(r.message) ? r.message : [];
+      toTemplateStyle(list);
+      return Promise.resolve({ list });
+    }
+    return Promise.reject(r);
+  });
+}
+
 /***
  * 获取名片模板
  */
 export const selectTemplate = ({
   parentCategoryId = 0,
+  categoryId,
+  styleId,
+  name = "",
   page = 1,
-  pageSize = 30 }) => {
+  pageSize = 10,
+}: TTemplateQuery = {}) => {
+  const query: TTemplateQuery = {
+    parentCategoryId,
+    categoryId,
+    styleId,
+    name: name.trim(),
+    page,
+    pageSize,
+  };
   return _request({
-    url: `/witinvite/template/get`, params: {
-      parentCategoryId, page, pageSize,
-    }, header: getUserHeader(), throwCatch: !0, formData: !1,
+    url: `/witinvite/template/get`, params: query,
+    header: getUserHeader(), throwCatch: !0, formData: !1,
   }).then((r: any) => {
-    console.log(r);
-    toTemplate({ parentCategoryId, page, list: r.message, total: r.total });
     if (r.result >= 0) {
-      return Promise.resolve(r.message);
+      const list = Array.isArray(r.message) ? r.message : [];
+      const total = Number(r.total || list.length);
+      toTemplate({ parentCategoryId, page, list, total });
+      return Promise.resolve({ list, total, page, pageSize } as TTemplatePage);
     } else {
       return Promise.reject(r);
     }
@@ -145,7 +193,7 @@ export const selectTemplate = ({
  */
 export const selectTemplateInfo = (id: number) => {
   return _request({
-    url: `/witinvite/template/getInfo`, params: {
+    url: `/witinvite/template/getInfo`, query: {
       id
     }, header: getUserHeader(), throwCatch: !0
   }).then((r: any) => {

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" fill="none">
+  <defs>
+    <linearGradient id="bamboo-ink" x1="126" y1="824" x2="471" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#657067" stop-opacity="0.34"/>
+      <stop offset="0.55" stop-color="#7F8677" stop-opacity="0.64"/>
+      <stop offset="1" stop-color="#9B9E91" stop-opacity="0.22"/>
+    </linearGradient>
+    <linearGradient id="leaf-ink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#657067" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#A2A396" stop-opacity="0.16"/>
+    </linearGradient>
+  </defs>
+  <path d="M94 858C145 730 189 638 241 534C293 430 354 303 470 68" stroke="url(#bamboo-ink)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M183 656C143 604 122 566 101 509M263 488C223 439 205 401 190 356M350 320C310 286 284 254 266 209M412 188C390 147 380 116 376 81" stroke="#768078" stroke-opacity="0.38" stroke-width="5" stroke-linecap="round"/>
+  <path d="M99 511C55 485 31 455 22 416C69 428 96 456 99 511Z" fill="url(#leaf-ink)"/>
+  <path d="M103 512C141 472 177 460 217 468C186 503 150 518 103 512Z" fill="url(#leaf-ink)"/>
+  <path d="M188 357C143 339 113 310 97 269C145 276 176 304 188 357Z" fill="url(#leaf-ink)"/>
+  <path d="M190 357C231 318 270 308 311 320C274 354 235 367 190 357Z" fill="url(#leaf-ink)"/>
+  <path d="M266 210C224 179 204 146 202 109C244 125 267 159 266 210Z" fill="url(#leaf-ink)"/>
+  <path d="M267 210C309 179 345 174 379 188C343 215 306 223 267 210Z" fill="url(#leaf-ink)"/>
+  <path d="M376 82C342 55 326 29 327 6C361 19 378 44 376 82Z" fill="url(#leaf-ink)"/>
+  <path d="M378 84C414 57 445 54 475 65C445 88 413 95 378 84Z" fill="url(#leaf-ink)"/>
+  <path d="M134 748C99 714 78 677 69 638M212 586C251 559 287 550 325 560" stroke="#8F958B" stroke-opacity="0.24" stroke-width="4" stroke-linecap="round"/>
+  <path d="M69 639C31 624 8 600 0 570C38 578 62 600 69 639Z" fill="#7F8677" fill-opacity="0.25"/>
+  <path d="M212 586C247 582 277 593 301 619C263 621 234 609 212 586Z" fill="#7F8677" fill-opacity="0.22"/>
+</svg>

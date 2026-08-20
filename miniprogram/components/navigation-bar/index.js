@@ -10,6 +10,10 @@ Component({
       type: String,
       value: '',
     },
+    titleAlign: {
+      type: String,
+      value: 'center',
+    },
     background: {
       type: String,
       value: '',
@@ -47,7 +51,6 @@ Component({
     const rect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
     wx.getSystemInfo({
       success: (res) => {
-        console.log(res);
         const ios = !!(res.system.toLowerCase().search('ios') + 1);
         const sideWidth = isSupport ? res.windowWidth - rect.left : 0;
         this.setData({

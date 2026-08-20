@@ -1,5 +1,4 @@
-import { TOption, _request, reflectEntity } from "../utils/util";
-import { _Server, setPerlogo } from "./global";
+import { _request } from "../utils/util";
 import { getUserHeader } from "./userSlice";
 
 export type TFavorite = {
@@ -24,6 +23,7 @@ export const FavoriteSlice = {
       const app = getApp(),
         favorites = app.proxyData.favorite,
         index = favorites.findIndex((favorite_: TFavorite) => favorite_.id === id);
+      if (index < 0) return;
       favorites.splice(index, 1);
       app.proxyData.favorite = [...favorites];
     },
@@ -34,18 +34,20 @@ export const {
   setFavorite, updateFavorite, removeFavorite,
 } = FavoriteSlice.reducers;
 
-export const queryFavorite = () => getApp().favorite;
+export const queryFavorite = () => getApp().globalData.favorite;
 
 /***
  * 获取我的邀请函收藏列表
  */
-export const selectFavorite = () =>
+export const selectFavorite = ({ page = 1, pageSize = 30 } = {}) =>
   _request({
     url: `/witinvite/invitation-favorite/getList`, header: getUserHeader(),
+    query: { page, pageSize },
   }).then((r: any) => {
     if (r.result >= 0) {
-      setFavorite(r.message);
-      return Promise.resolve();
+      const list = Array.isArray(r.message) ? r.message : [];
+      setFavorite(list);
+      return Promise.resolve({ list, total: Number(r.total || list.length) });
     } else {
       return Promise.reject(r);
     }
@@ -57,7 +59,7 @@ export const selectFavorite = () =>
 export const createFavorite = (invitationId: number) =>
   _request({
     url: `/witinvite/invitation-favorite/add`, header: getUserHeader(),
-    params: { invitationId },
+    query: { invitationId },
   }).then((r: any) => {
     if (r.result >= 0) {
       updateFavorite(r.message);
@@ -73,7 +75,7 @@ export const createFavorite = (invitationId: number) =>
 export const cancelFavorite = (invitationId: number) =>
   _request({
     url: `/witinvite/invitation-favorite/cancel`, header: getUserHeader(),
-    params: { invitationId },
+    query: { invitationId },
   }).then((r: any) => {
     if (r.result >= 0) {
       removeFavorite(invitationId);
@@ -89,7 +91,7 @@ export const cancelFavorite = (invitationId: number) =>
 export const checkFavorite = (invitationId: number) =>
   _request({
     url: `/witinvite/invitation-favorite/check`, header: getUserHeader(),
-    params: { invitationId },
+    query: { invitationId },
   }).then((r: any) => {
     if (r.result >= 0) {
       return Promise.resolve(!!r.message);

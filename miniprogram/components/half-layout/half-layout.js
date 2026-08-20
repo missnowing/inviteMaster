@@ -61,8 +61,7 @@ Component({
       const query = this.createSelectorQuery()
       // ready 生命周期里才能获取到首屏的布局信息
       query.select('.contain').boundingClientRect()
-      query.exec((res) => {
-        console.log(res);
+      query.exec(() => {
         // this.transY.value = this.commentHeight.value = res[0].height
       })
       // 通过 transY 一个 SharedValue 控制半屏的位置
@@ -82,9 +81,8 @@ Component({
     },
   },
   methods: {
-    onError(e) {
+    onError() {
       const theme = getApp().globalData.system.theme;
-      console.log("error", e.detail.errMsg, theme);
       this.setData({ image: theme === 'dark' ? _dark : _light });
     },
     onTapOpenComment() {
@@ -97,18 +95,15 @@ Component({
     },
     openComment(duration) {
       'worklet'
-      console.log("openComment");
       this.transY.value = timing(0, { easing: Easing.bezier(0.25, 1, 0.5, 1) })
       // this.opacity.value = timing(1, { duration: 500, });
       // wx.worklet.runOnJS(this.initProps.bind(this))();
     },
     onTapCloseComment() {
-      console.log("onTapCloseComment")
       this.closeComment()
     },
     closeComment() {
       'worklet'
-      console.log("closeComment");
       this.transY.value = timing(this.commentHeight.value)
       // this.opacity.value = timing(0);
       wx.worklet.runOnJS(this.releaseProps.bind(this))();
@@ -160,8 +155,7 @@ Component({
 
     /** 自定义方法 */
     initProps() {
-      const { bgImg, isVague, fontcolor } = this.data.props;
-      console.log(`bgImg:${bgImg}\n${isVague}\nfontcolor:${fontcolor}`);
+      const { bgImg } = this.data.props;
       if (bgImg) {
         // let style = `background:url(${bg});background-size:cover;transform:scale(1.05);`;
         // if (isVague) style += `filter:blur(20px);transform:scale(1.2);`;
@@ -186,7 +180,6 @@ Component({
     //image的onload，用于使图片渐隐
     loadImage() {
       // this.opacity.value = timing(1, { duration: 500, });
-      console.log("onload");
       // wx.showModal({
       //   content: 'onload'
       // })

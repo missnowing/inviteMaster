@@ -1,11 +1,11 @@
 @import "../../assets/iconfont/iconfont.scss";
 
 .c {
-  color: #5f27cd;
+  color: var(--cinnabar);
 }
 
 .bg {
-  background: #5f27cd;
+  background: var(--cinnabar);
 }
 
 .t50 {
@@ -25,11 +25,11 @@
 }
 
 .cw {
-  color: #fff;
+  color: var(--paper-light);
 }
 
 .bw {
-  background: #fff;
+  background: var(--paper-light);
 }
 
 .fl {
